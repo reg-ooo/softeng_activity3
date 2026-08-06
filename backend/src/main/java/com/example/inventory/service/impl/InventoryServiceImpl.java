@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
+
 @Service
 public class InventoryServiceImpl implements InventoryService {
 
@@ -43,5 +45,10 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setPrice(data.getPrice());
 
         return inventoryRepository.save(inventory);
+    }
+
+    @Override
+    public List<Inventory> findAll(){
+        return inventoryRepository.findAllByIsDeletedFalse();
     }
 }
