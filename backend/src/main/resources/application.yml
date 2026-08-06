@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: inventory-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/inventory_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:change-this-local-password}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+
+frontend:
+  origin: ${FRONTEND_ORIGIN:http://localhost:5173}
