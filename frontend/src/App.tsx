@@ -46,6 +46,7 @@ function App() {
   const [reloadToken, setReloadToken] = useState(0)
   const [modalMode, setModalMode] = useState<ModalMode | null>(null)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const modalTriggerRef = useRef<HTMLElement | null>(null)
   const addItemTriggerRef = useRef<HTMLButtonElement>(null)
   const listRequestRef = useRef<AbortController | null>(null)
@@ -94,17 +95,20 @@ function App() {
   const handleAdd = useCallback(() => {
     modalTriggerRef.current = addItemTriggerRef.current
     setSelectedItem(null)
+    setEditingItem(null)
     setModalMode('add')
   }, [])
 
   const handleEdit = useCallback((item: InventoryItem) => {
     rememberTrigger()
-    setSelectedItem(item)
+    setSelectedItem(null)
+    setEditingItem(item)
     setModalMode('edit')
   }, [rememberTrigger])
 
   const handleDelete = useCallback((item: InventoryItem) => {
     rememberTrigger()
+    setEditingItem(null)
     setSelectedItem(item)
     setModalMode('delete')
   }, [rememberTrigger])
@@ -112,6 +116,7 @@ function App() {
   const handleCloseModal = useCallback(() => {
     setModalMode(null)
     setSelectedItem(null)
+    setEditingItem(null)
   }, [])
 
   const handleCreated = useCallback((item: InventoryItem) => {
@@ -130,13 +135,28 @@ function App() {
     setReloadToken((token) => token + 1)
     setModalMode(null)
     setSelectedItem(null)
+    setEditingItem(null)
+  }, [])
+
+  const handleUpdated = useCallback((item: InventoryItem) => {
+    setListState((current) =>
+      current.status === 'success'
+        ? {
+            status: 'success',
+            items: current.items.map((currentItem) => (currentItem.id === item.id ? item : currentItem)),
+          }
+        : current,
+    )
+    setModalMode(null)
+    setSelectedItem(null)
+    setEditingItem(null)
   }, [])
 
   return (
     <main
       className="page-shell"
       data-modal-mode={modalMode ?? undefined}
-      data-selected-item-id={selectedItem?.id}
+      data-selected-item-id={editingItem?.id ?? selectedItem?.id}
     >
       <header className="page-header">
         <div>
@@ -182,6 +202,17 @@ function App() {
           triggerRef={modalTriggerRef}
           onClose={handleCloseModal}
           onSaved={handleCreated}
+        />
+      ) : null}
+
+      {modalMode === 'edit' && editingItem ? (
+        <InventoryItemFormModal
+          mode="edit"
+          item={editingItem}
+          open
+          triggerRef={modalTriggerRef}
+          onClose={handleCloseModal}
+          onSaved={handleUpdated}
         />
       ) : null}
     </main>

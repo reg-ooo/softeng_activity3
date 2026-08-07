@@ -7,7 +7,7 @@ import {
   type RefObject,
 } from 'react'
 import { LoaderCircle } from 'lucide-react'
-import { createInventory } from '../../lib/inventoryApi'
+import { createInventory, updateInventory } from '../../lib/inventoryApi'
 import {
   validateInventoryField,
   validateInventoryImage,
@@ -18,7 +18,10 @@ import {
 } from '../../lib/inventoryValidation'
 import type { InventoryItem } from '../../types/inventory'
 import { Modal } from '../ui/Modal'
-import { InventoryImageField } from './InventoryImageField'
+import {
+  InventoryImageField,
+  type InventoryImageState,
+} from './InventoryImageField'
 
 type InventoryItemFormModalProps = {
   mode: 'create' | 'edit'
@@ -58,6 +61,7 @@ export function InventoryItemFormModal({
 }: InventoryItemFormModalProps) {
   const [values, setValues] = useState<InventoryFormValues>(emptyValues)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageState, setImageState] = useState<InventoryImageState>('none')
   const [touched, setTouched] = useState<TouchedFields>(untouchedFields)
   const [fieldErrors, setFieldErrors] = useState<InventoryFieldErrors>({})
   const [fileError, setFileError] = useState<string | null>(null)
@@ -80,7 +84,9 @@ export function InventoryItemFormModal({
       return
     }
 
+    const hasCurrentImage = mode === 'edit' && Boolean(item?.imagePath?.trim())
     setImageFile(null)
+    setImageState(hasCurrentImage ? 'keep' : 'none')
     setValues(
       mode === 'edit' && item
         ? {
@@ -155,8 +161,8 @@ export function InventoryItemFormModal({
       return
     }
 
-    if (!isCreateMode) {
-      setSubmitError('Editing is not available yet.')
+    if (!isCreateMode && !item) {
+      setSubmitError(saveErrorMessage)
       return
     }
 
@@ -165,14 +171,35 @@ export function InventoryItemFormModal({
     formData.append('description', values.description.trim())
     formData.append('quantity', values.quantity)
     formData.append('price', values.price)
-    if (imageFile) {
+    if (isCreateMode && imageFile) {
       formData.append('image', imageFile)
+    }
+
+    if (!isCreateMode && item) {
+      if (imageState === 'keep') {
+        formData.append('imagePath', item.imagePath ?? '')
+        formData.append('deletedImage', 'false')
+      } else if (imageState === 'replace') {
+        formData.append('imagePath', '')
+        formData.append('deletedImage', 'false')
+        if (imageFile) {
+          formData.append('image', imageFile)
+        }
+      } else if (imageState === 'remove') {
+        formData.append('imagePath', '')
+        formData.append('deletedImage', 'true')
+      } else {
+        formData.append('imagePath', '')
+        formData.append('deletedImage', 'false')
+      }
     }
 
     setIsSubmitting(true)
     try {
-      const createdItem = await createInventory(formData)
-      onSaved(createdItem)
+      const savedItem = isCreateMode
+        ? await createInventory(formData)
+        : await updateInventory(item!.id, formData)
+      onSaved(savedItem)
     } catch {
       setSubmitError(saveErrorMessage)
     } finally {
@@ -304,12 +331,16 @@ export function InventoryItemFormModal({
           </div>
 
           <InventoryImageField
+            mode={mode}
+            state={imageState}
             file={imageFile}
+            currentImagePath={mode === 'edit' ? item?.imagePath : null}
             error={fileError}
             disabled={isSubmitting}
             itemName={values.name}
             controlRef={dropzoneRef}
-            onFileChange={(nextFile) => {
+            onSelectionChange={(nextState, nextFile) => {
+              setImageState(nextState)
               setImageFile(nextFile)
               setSubmitError(null)
             }}

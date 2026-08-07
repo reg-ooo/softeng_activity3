@@ -648,6 +648,23 @@
   object-fit: cover;
 }
 
+.inventory-image-selection__placeholder {
+  width: 72px;
+  height: 64px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+  background: var(--color-page);
+}
+
+.inventory-image-selection__placeholder svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.6;
+}
+
 .inventory-image-selection__details {
   min-width: 0;
   display: grid;
@@ -699,6 +716,27 @@
 
 .inventory-image-selection__actions .inventory-image-selection__remove {
   color: var(--color-danger);
+}
+
+.inventory-image-selection--current .inventory-image-selection__replace {
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.inventory-image-selection--current .inventory-image-selection__replace:hover:not(:disabled) {
+  border-color: var(--color-muted);
+  background: var(--color-page);
+}
+
+.inventory-image-field__hint {
+  margin: var(--space-1) 0 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .inventory-form__submit-error {
@@ -827,6 +865,11 @@
   }
 
   .inventory-image-selection > img {
+    width: 64px;
+    height: 56px;
+  }
+
+  .inventory-image-selection__placeholder {
     width: 64px;
     height: 56px;
   }
