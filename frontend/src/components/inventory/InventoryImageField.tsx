@@ -18,6 +18,8 @@ import { getInventoryImageUrl } from '../../lib/inventoryApi'
 
 export type InventoryImageState = 'keep' | 'replace' | 'remove' | 'none'
 
+type ImageControlFocusTarget = 'dropzone' | 'currentReplace' | 'replacementReplace'
+
 type InventoryImageFieldProps = {
   mode: 'create' | 'edit'
   state: InventoryImageState
@@ -68,6 +70,12 @@ export function InventoryImageField({
   const [isDragging, setIsDragging] = useState(false)
   const [failedCurrentImageUrl, setFailedCurrentImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropzoneButtonRef = useRef<HTMLButtonElement>(null)
+  const currentReplaceButtonRef = useRef<HTMLButtonElement>(null)
+  const currentRemoveButtonRef = useRef<HTMLButtonElement>(null)
+  const replacementReplaceButtonRef = useRef<HTMLButtonElement>(null)
+  const replacementRemoveButtonRef = useRef<HTMLButtonElement>(null)
+  const pendingFocusTargetRef = useRef<ImageControlFocusTarget | null>(null)
   const fileInputId = useId()
   const fileErrorId = useId()
   const normalizedCurrentImagePath = currentImagePath?.trim() ?? ''
@@ -78,6 +86,9 @@ export function InventoryImageField({
   const currentImageName = hasOriginalImage
     ? getImageFileName(normalizedCurrentImagePath)
     : null
+  const showCurrentImage = state === 'keep' && hasOriginalImage
+  const showReplacement = state === 'replace' && file && previewUrl
+  const showDropzone = mode === 'create' || (!showCurrentImage && !showReplacement)
 
   useLayoutEffect(() => {
     if (!file) {
@@ -100,10 +111,55 @@ export function InventoryImageField({
     setFailedCurrentImageUrl(null)
   }, [currentImageUrl])
 
-  function assignControlRef(node: HTMLButtonElement | null) {
-    if (controlRef) {
-      controlRef.current = node
+  useLayoutEffect(() => {
+    if (!controlRef) {
+      return
     }
+
+    const assignedControl = mode === 'create'
+      ? dropzoneButtonRef.current
+      : showCurrentImage
+        ? currentReplaceButtonRef.current
+        : showReplacement
+          ? replacementReplaceButtonRef.current
+          : dropzoneButtonRef.current
+    controlRef.current = assignedControl
+
+    return () => {
+      if (controlRef.current === assignedControl) {
+        controlRef.current = null
+      }
+    }
+  }, [controlRef, mode, showCurrentImage, showReplacement])
+
+  useLayoutEffect(() => {
+    const pendingTarget = pendingFocusTargetRef.current
+    if (!pendingTarget || disabled) {
+      return
+    }
+
+    const target = pendingTarget === 'dropzone'
+      ? dropzoneButtonRef.current
+      : pendingTarget === 'currentReplace'
+        ? currentReplaceButtonRef.current
+        : replacementReplaceButtonRef.current
+
+    if (target) {
+      pendingFocusTargetRef.current = null
+      target.focus()
+    }
+  }, [disabled, error, file, mode, previewUrl, state])
+
+  function visibleControlTarget(): ImageControlFocusTarget {
+    if (mode === 'create') {
+      return 'dropzone'
+    }
+
+    if (showCurrentImage) {
+      return 'currentReplace'
+    }
+
+    return showReplacement ? 'replacementReplace' : 'dropzone'
   }
 
   function openFilePicker() {
@@ -122,9 +178,17 @@ export function InventoryImageField({
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
+      const currentTarget = visibleControlTarget()
+      const visibleControl = currentTarget === 'dropzone'
+        ? dropzoneButtonRef.current
+        : currentTarget === 'currentReplace'
+          ? currentReplaceButtonRef.current
+          : replacementReplaceButtonRef.current
+      visibleControl?.focus()
       return
     }
 
+    pendingFocusTargetRef.current = mode === 'create' ? 'dropzone' : 'replacementReplace'
     onSelectionChange('replace', nextFile)
     onErrorChange(null)
   }
@@ -150,6 +214,9 @@ export function InventoryImageField({
   }
 
   function removeFile() {
+    pendingFocusTargetRef.current = mode === 'create' || !hasOriginalImage
+      ? 'dropzone'
+      : 'currentReplace'
     onSelectionChange(hasOriginalImage ? 'keep' : 'none', null)
     onErrorChange(null)
     if (fileInputRef.current) {
@@ -158,16 +225,13 @@ export function InventoryImageField({
   }
 
   function removeCurrentImage() {
+    pendingFocusTargetRef.current = 'dropzone'
     onSelectionChange('remove', null)
     onErrorChange(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
-
-  const showCurrentImage = state === 'keep' && hasOriginalImage
-  const showReplacement = state === 'replace' && file && previewUrl
-  const showDropzone = !showCurrentImage && !showReplacement
 
   return (
     <div className="inventory-image-field">
@@ -193,7 +257,7 @@ export function InventoryImageField({
       {showDropzone ? (
         <button
           className={`inventory-image-dropzone${isDragging ? ' inventory-image-dropzone--dragging' : ''}`}
-          ref={assignControlRef}
+          ref={dropzoneButtonRef}
           type="button"
           onClick={openFilePicker}
           onDragEnter={(event) => {
@@ -249,7 +313,7 @@ export function InventoryImageField({
           <div className="inventory-image-selection__actions">
             <button
               className="inventory-image-selection__replace"
-              ref={assignControlRef}
+              ref={currentReplaceButtonRef}
               type="button"
               onClick={openFilePicker}
               disabled={disabled}
@@ -258,7 +322,13 @@ export function InventoryImageField({
             >
               Replace image
             </button>
-            <button className="inventory-image-selection__remove" type="button" onClick={removeCurrentImage} disabled={disabled}>
+            <button
+              className="inventory-image-selection__remove"
+              ref={currentRemoveButtonRef}
+              type="button"
+              onClick={removeCurrentImage}
+              disabled={disabled}
+            >
               Remove image
             </button>
           </div>
@@ -274,7 +344,7 @@ export function InventoryImageField({
           </div>
           <div className="inventory-image-selection__actions">
             <button
-              ref={assignControlRef}
+              ref={replacementReplaceButtonRef}
               type="button"
               onClick={openFilePicker}
               disabled={disabled}
@@ -284,7 +354,13 @@ export function InventoryImageField({
               <RefreshCw aria-hidden="true" />
               Replace
             </button>
-            <button className="inventory-image-selection__remove" type="button" onClick={removeFile} disabled={disabled}>
+            <button
+              className="inventory-image-selection__remove"
+              ref={replacementRemoveButtonRef}
+              type="button"
+              onClick={removeFile}
+              disabled={disabled}
+            >
               <Trash2 aria-hidden="true" />
               Remove
             </button>
