@@ -3,6 +3,7 @@ import { api } from './api'
 import type { InventoryItem } from '../types/inventory'
 
 interface ApiErrorBody {
+  detail?: unknown
   error?: unknown
   message?: unknown
 }
@@ -48,18 +49,24 @@ export function getInventoryImageUrl(imagePath: string | null): string | null {
 }
 
 export function getApiErrorMessage(error: unknown, fallback: string): string {
-  if (!axios.isAxiosError<ApiErrorBody>(error)) {
+  if (!axios.isAxiosError<ApiErrorBody | string>(error)) {
     return fallback
   }
 
-  const responseMessage = error.response?.data?.message
-  if (typeof responseMessage === 'string' && responseMessage.trim()) {
-    return responseMessage.trim()
+  const responseBody: unknown = error.response?.data
+  if (responseBody && typeof responseBody === 'object') {
+    const { detail, message, error: responseError } = responseBody as ApiErrorBody
+    const responseMessage = [detail, message, responseError].find(
+      (value): value is string => typeof value === 'string' && Boolean(value.trim()),
+    )
+
+    if (responseMessage) {
+      return responseMessage.trim()
+    }
   }
 
-  const responseError = error.response?.data?.error
-  if (typeof responseError === 'string' && responseError.trim()) {
-    return responseError.trim()
+  if (typeof responseBody === 'string' && responseBody.trim()) {
+    return responseBody.trim()
   }
 
   return fallback

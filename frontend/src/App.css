@@ -815,6 +815,9 @@
   border-radius: var(--radius-sm);
   color: var(--color-text);
   background: var(--color-surface);
+  transition:
+    border-color var(--motion-standard) ease,
+    background-color var(--motion-standard) ease;
 }
 
 .inventory-image-selection--current .inventory-image-selection__replace:hover:not(:disabled) {

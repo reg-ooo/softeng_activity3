@@ -27,6 +27,10 @@ const focusableSelector = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',')
 
+function restoreFocus(returnFocusRef: RefObject<HTMLElement | null> | undefined, fallback: HTMLElement | null) {
+  ;(returnFocusRef?.current ?? fallback)?.focus()
+}
+
 export function Modal({
   open,
   title,
@@ -57,7 +61,6 @@ export function Modal({
     }
 
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const returnFocusElement = returnFocusRef?.current
     const previousOverflow = document.body.style.overflow
     const dialog = dialogRef.current
     document.body.style.overflow = 'hidden'
@@ -107,7 +110,7 @@ export function Modal({
       window.cancelAnimationFrame(focusFrame)
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = previousOverflow
-      ;(returnFocusElement ?? previouslyFocused)?.focus()
+      restoreFocus(returnFocusRef, previouslyFocused)
     }
   }, [initialFocusRef, open, returnFocusRef])
 

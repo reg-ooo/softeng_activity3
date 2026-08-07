@@ -186,7 +186,6 @@ export function InventoryItemFormModal({
           formData.append('image', imageFile)
         }
       } else if (imageState === 'remove') {
-        formData.append('imagePath', '')
         formData.append('deletedImage', 'true')
       } else {
         formData.append('imagePath', '')

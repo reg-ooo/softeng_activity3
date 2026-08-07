@@ -55,6 +55,11 @@ function App() {
   const listRequestRef = useRef<AbortController | null>(null)
   const deleteRequestRef = useRef(false)
 
+  const abortActiveListRequest = useCallback(() => {
+    listRequestRef.current?.abort()
+    listRequestRef.current = null
+  }, [])
+
   useEffect(() => {
     const controller = new AbortController()
     let isCurrentRequest = true
@@ -143,6 +148,8 @@ function App() {
     try {
       await softDeleteInventory(item.id)
 
+      abortActiveListRequest()
+
       const editButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('button[data-inventory-action="edit"]'))
       const deletedButtonIndex = editButtons.findIndex((button) => button.dataset.inventoryItemId === String(item.id))
       modalTriggerRef.current = editButtons[deletedButtonIndex + 1] ?? editButtons[deletedButtonIndex - 1] ?? addItemTriggerRef.current
@@ -160,11 +167,10 @@ function App() {
       deleteRequestRef.current = false
       setIsDeleting(false)
     }
-  }, [isDeleting])
+  }, [abortActiveListRequest, isDeleting])
 
   const handleCreated = useCallback((item: InventoryItem) => {
-    listRequestRef.current?.abort()
-    listRequestRef.current = null
+    abortActiveListRequest()
     setListState((current) =>
       current.status === 'success'
         ? {
@@ -179,9 +185,10 @@ function App() {
     setModalMode(null)
     setSelectedItem(null)
     setEditingItem(null)
-  }, [])
+  }, [abortActiveListRequest])
 
   const handleUpdated = useCallback((item: InventoryItem) => {
+    abortActiveListRequest()
     setListState((current) =>
       current.status === 'success'
         ? {
@@ -193,7 +200,7 @@ function App() {
     setModalMode(null)
     setSelectedItem(null)
     setEditingItem(null)
-  }, [])
+  }, [abortActiveListRequest])
 
   return (
     <main
