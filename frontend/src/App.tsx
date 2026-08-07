@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CircleAlert, LoaderCircle, Plus, RotateCw } from 'lucide-react'
 import { InventoryGrid } from './components/inventory/InventoryGrid'
+import { InventoryItemFormModal } from './components/inventory/InventoryItemFormModal'
 import { getApiErrorMessage, isApiRequestCanceled, listInventory } from './lib/inventoryApi'
 import type { InventoryItem } from './types/inventory'
 import './App.css'
@@ -82,10 +83,10 @@ function App() {
   }, [])
 
   const handleAdd = useCallback(() => {
-    rememberTrigger()
+    modalTriggerRef.current = addItemTriggerRef.current
     setSelectedItem(null)
     setModalMode('add')
-  }, [rememberTrigger])
+  }, [])
 
   const handleEdit = useCallback((item: InventoryItem) => {
     rememberTrigger()
@@ -98,6 +99,26 @@ function App() {
     setSelectedItem(item)
     setModalMode('delete')
   }, [rememberTrigger])
+
+  const handleCloseModal = useCallback(() => {
+    setModalMode(null)
+    setSelectedItem(null)
+  }, [])
+
+  const handleCreated = useCallback((item: InventoryItem) => {
+    setListState((current) =>
+      current.status === 'success'
+        ? {
+            status: 'success',
+            items: current.items.some((currentItem) => currentItem.id === item.id)
+              ? current.items.map((currentItem) => (currentItem.id === item.id ? item : currentItem))
+              : [...current.items, item],
+          }
+        : { status: 'success', items: [item] },
+    )
+    setModalMode(null)
+    setSelectedItem(null)
+  }, [])
 
   return (
     <main
@@ -141,6 +162,14 @@ function App() {
       {listState.status === 'success' ? (
         <InventoryGrid items={listState.items} onAdd={handleAdd} onEdit={handleEdit} onDelete={handleDelete} />
       ) : null}
+
+      <InventoryItemFormModal
+        mode="create"
+        open={modalMode === 'add'}
+        triggerRef={modalTriggerRef}
+        onClose={handleCloseModal}
+        onSaved={handleCreated}
+      />
     </main>
   )
 }

@@ -12,6 +12,11 @@ export async function listInventory(signal?: AbortSignal): Promise<InventoryItem
   return response.data
 }
 
+export async function createInventory(formData: FormData): Promise<InventoryItem> {
+  const response = await api.post<InventoryItem>('/inventory', formData)
+  return response.data
+}
+
 export function getInventoryImageUrl(imagePath: string | null): string | null {
   const trimmedPath = imagePath?.trim()
 

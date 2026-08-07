@@ -12,6 +12,10 @@ interface ModalProps {
   closeOnEscape?: boolean
   showCloseButton?: boolean
   describedBy?: string
+  className?: string
+  busy?: boolean
+  closeDisabled?: boolean
+  returnFocusRef?: RefObject<HTMLElement | null>
 }
 
 const focusableSelector = [
@@ -33,9 +37,19 @@ export function Modal({
   closeOnEscape = true,
   showCloseButton = true,
   describedBy,
+  className,
+  busy = false,
+  closeDisabled = false,
+  returnFocusRef,
 }: ModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  const closeOnEscapeRef = useRef(closeOnEscape)
+  const closeDisabledRef = useRef(closeDisabled)
+  onCloseRef.current = onClose
+  closeOnEscapeRef.current = closeOnEscape
+  closeDisabledRef.current = closeDisabled
 
   useEffect(() => {
     if (!open) {
@@ -43,6 +57,7 @@ export function Modal({
     }
 
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const returnFocusElement = returnFocusRef?.current
     const previousOverflow = document.body.style.overflow
     const dialog = dialogRef.current
     document.body.style.overflow = 'hidden'
@@ -53,9 +68,9 @@ export function Modal({
     })
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape' && closeOnEscape) {
+      if (event.key === 'Escape' && closeOnEscapeRef.current && !closeDisabledRef.current) {
         event.preventDefault()
-        onClose()
+        onCloseRef.current()
         return
       }
 
@@ -92,9 +107,9 @@ export function Modal({
       window.cancelAnimationFrame(focusFrame)
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = previousOverflow
-      previouslyFocused?.focus()
+      ;(returnFocusElement ?? previouslyFocused)?.focus()
     }
-  }, [closeOnEscape, initialFocusRef, onClose, open])
+  }, [initialFocusRef, open, returnFocusRef])
 
   if (!open) {
     return null
@@ -104,24 +119,25 @@ export function Modal({
     <div
       className="modal-backdrop"
       onMouseDown={(event) => {
-        if (closeOnBackdrop && event.target === event.currentTarget) {
+        if (!closeDisabled && closeOnBackdrop && event.target === event.currentTarget) {
           onClose()
         }
       }}
     >
       <div
-        className="modal"
+        className={className ? `modal ${className}` : 'modal'}
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={describedBy}
+        aria-busy={busy || undefined}
         tabIndex={-1}
       >
         <div className="modal__header">
           <h2 id={titleId}>{title}</h2>
           {showCloseButton ? (
-            <button className="icon-button" type="button" onClick={onClose} aria-label="Close dialog">
+            <button className="icon-button" type="button" onClick={onClose} aria-label="Close dialog" disabled={closeDisabled}>
               <X aria-hidden="true" />
             </button>
           ) : null}
