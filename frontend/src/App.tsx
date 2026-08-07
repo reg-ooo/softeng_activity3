@@ -55,7 +55,7 @@ function App() {
     let isCurrentRequest = true
     listRequestRef.current = controller
 
-    setListState({ status: 'loading' })
+    setListState((current) => (current.status === 'success' ? current : { status: 'loading' }))
 
     listInventory(controller.signal)
       .then((items) => {
@@ -68,10 +68,14 @@ function App() {
           return
         }
 
-        setListState({
-          status: 'error',
-          message: getApiErrorMessage(error, retrievalErrorMessage),
-        })
+        setListState((current) =>
+          current.status === 'success'
+            ? current
+            : {
+                status: 'error',
+                message: getApiErrorMessage(error, retrievalErrorMessage),
+              },
+        )
       })
 
     return () => {
@@ -123,6 +127,7 @@ function App() {
           }
         : { status: 'success', items: [item] },
     )
+    setReloadToken((token) => token + 1)
     setModalMode(null)
     setSelectedItem(null)
   }, [])
