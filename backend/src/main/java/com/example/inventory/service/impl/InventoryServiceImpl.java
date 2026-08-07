@@ -62,12 +62,15 @@ public class InventoryServiceImpl implements InventoryService {
         validatePayload(data);
 
         if(data.isDeletedImage()) {
+            String imagePath = item.getImagePath();
             item.setImagePath(null);
-            // TODO delete image from storage
+            uploadService.deleteImage(imagePath);
         }
 
         else if(shouldChangeImagePath(item, data, file)) {
+            String imagePath = item.getImagePath();
             item.setImagePath(saveImage(file));
+            uploadService.deleteImage(imagePath);
         }
 
         item.setName(data.getName());
