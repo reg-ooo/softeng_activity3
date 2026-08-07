@@ -1,32 +1,34 @@
-package com.example.inventory.dto;
-
-import com.example.inventory.dto.InventoryPayload;
+package main.java.com.example.inventory.dto;
 
 import java.math.BigDecimal;
 
-public class CreateInventoryDTO implements InventoryPayload {
+import com.example.inventory.dto.InventoryPayload;
 
+public class UpdateInventoryDTO implements InventoryPayload {
     private String name;
     private String description;
     private Integer quantity;
     private BigDecimal price;
     private String imagePath;
+    private boolean deletedImage;
 
-    public CreateInventoryDTO() {
+    public UpdateInventoryDTO() {
     }
 
-    public CreateInventoryDTO(
+    public UpdateInventoryDTO(
             String name,
             String description,
             Integer quantity,
             BigDecimal price,
-            String imagePath
+            String imagePath,
+            boolean deletedImage
     ) {
         this.name = name;
         this.description = description;
         this.quantity = quantity;
         this.price = price;
         this.imagePath = imagePath;
+        this.deletedImage = deletedImage;
     }
 
     public String getName() {
@@ -67,5 +69,13 @@ public class CreateInventoryDTO implements InventoryPayload {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public boolean isDeletedImage() {
+        return deletedImage;
+    }
+
+    public void setDeletedImage(boolean deletedImage) {
+        this.deletedImage = deletedImage;
     }
 }

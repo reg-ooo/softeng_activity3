@@ -3,15 +3,18 @@ package com.example.inventory.controller;
 import com.example.inventory.dto.CreateInventoryDTO;
 import com.example.inventory.model.Inventory;
 import com.example.inventory.service.InventoryService;
+import main.java.com.example.inventory.dto.UpdateInventoryDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+//import org.springframework.web.bind.annotation.ModelAttribute;
+//import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.PutMapping;
+//import org.springframework.web.bind.annotation.RequestPart;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -43,5 +46,21 @@ public class InventoryController {
     @GetMapping("")
     public ResponseEntity<List<Inventory>> findAll(){
         return ResponseEntity.ok(inventoryService.findAll());
+    }
+
+    @PutMapping(value = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<Inventory> updateInventory(
+            @ModelAttribute UpdateInventoryDTO data,
+            @PathVariable Long id,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        if (data == null) {
+            return ResponseEntity.status(400).build();
+        }
+
+        Inventory inventory = inventoryService.update(id, data, image);
+        return ResponseEntity.status(200).body(inventory);
     }
 }

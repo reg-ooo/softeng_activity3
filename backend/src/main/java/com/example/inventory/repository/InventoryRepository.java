@@ -10,5 +10,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
 
     List<Inventory> findAllByIsDeletedFalse();
 
-    Optional<Inventory> findByIdAndIsDeletedFalse(Integer id);
+    Optional<Inventory> findByIdAndIsDeletedFalse(Long id);
 }

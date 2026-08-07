@@ -15,7 +15,7 @@ public class Inventory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String name;
 
@@ -36,7 +36,7 @@ public class Inventory {
     }
 
     public Inventory(
-            Integer id,
+            Long id,
             String name,
             String description,
             Integer quantity,
@@ -53,11 +53,11 @@ public class Inventory {
         this.isDeleted = isDeleted;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
