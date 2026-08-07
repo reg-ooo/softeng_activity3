@@ -58,11 +58,23 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
           </div>
 
           <div className="inventory-card__actions">
-            <button className="button button--secondary" type="button" onClick={() => onEdit(item)}>
+            <button
+              className="button button--secondary"
+              type="button"
+              data-inventory-action="edit"
+              data-inventory-item-id={item.id}
+              onClick={() => onEdit(item)}
+            >
               <Pencil aria-hidden="true" />
               Edit
             </button>
-            <button className="button button--danger" type="button" onClick={() => onDelete(item)}>
+            <button
+              className="button button--danger"
+              type="button"
+              data-inventory-action="delete"
+              data-inventory-item-id={item.id}
+              onClick={() => onDelete(item)}
+            >
               <Trash2 aria-hidden="true" />
               Delete
             </button>

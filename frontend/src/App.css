@@ -87,6 +87,16 @@
   background: var(--color-page);
 }
 
+.button--danger-solid {
+  border-color: var(--color-danger);
+  color: var(--color-surface);
+  background: var(--color-danger);
+}
+
+.button--danger-solid:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgb(220 38 38 / 24%);
+}
+
 .page-header__action {
   min-width: 140px;
   min-height: 48px;
@@ -394,6 +404,86 @@
 .inventory-form-modal .modal__header .icon-button {
   margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-1)) 0 0;
   color: var(--color-text);
+}
+
+.delete-confirmation-modal {
+  width: min(100%, 576px);
+}
+
+.delete-confirmation-modal .modal__header {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+.delete-confirmation-modal__body {
+  padding: var(--space-3) var(--space-3) var(--space-2);
+}
+
+.delete-confirmation-modal__icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-2);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--color-danger);
+  background: rgb(220 38 38 / 10%);
+}
+
+.delete-confirmation-modal__icon svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+.delete-confirmation-modal__body h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+}
+
+.delete-confirmation-modal__description {
+  margin: var(--space-1) 0 0;
+  color: var(--color-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.delete-confirmation-modal__error {
+  margin: var(--space-2) 0 0;
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.delete-confirmation-modal__footer {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.delete-confirmation-modal__footer .button {
+  min-width: 104px;
+}
+
+.delete-confirmation-modal__footer .delete-confirmation-modal__confirm {
+  min-width: 156px;
+}
+
+.delete-confirmation-modal__spinner {
+  animation: spin var(--motion-slow) linear infinite;
 }
 
 .inventory-form__description {
@@ -846,6 +936,19 @@
 
   .inventory-form-modal .modal__header {
     padding: var(--space-3) var(--space-3) 0;
+  }
+
+  .delete-confirmation-modal__body {
+    padding: var(--space-3);
+  }
+
+  .delete-confirmation-modal__footer {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+
+  .delete-confirmation-modal__footer .button {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .inventory-form__description {

@@ -22,6 +22,10 @@ export async function updateInventory(id: number, formData: FormData): Promise<I
   return response.data
 }
 
+export async function softDeleteInventory(id: number): Promise<void> {
+  await api.patch(`/inventory/delete/${id}`)
+}
+
 export function getInventoryImageUrl(imagePath: string | null): string | null {
   const trimmedPath = imagePath?.trim()
 

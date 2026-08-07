@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CircleAlert, LoaderCircle, Plus, RotateCw } from 'lucide-react'
+import { DeleteConfirmationModal } from './components/inventory/DeleteConfirmationModal'
 import { InventoryGrid } from './components/inventory/InventoryGrid'
 import { InventoryItemFormModal } from './components/inventory/InventoryItemFormModal'
-import { getApiErrorMessage, isApiRequestCanceled, listInventory } from './lib/inventoryApi'
+import { getApiErrorMessage, isApiRequestCanceled, listInventory, softDeleteInventory } from './lib/inventoryApi'
 import type { InventoryItem } from './types/inventory'
 import './App.css'
 
@@ -47,9 +48,12 @@ function App() {
   const [modalMode, setModalMode] = useState<ModalMode | null>(null)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const modalTriggerRef = useRef<HTMLElement | null>(null)
   const addItemTriggerRef = useRef<HTMLButtonElement>(null)
   const listRequestRef = useRef<AbortController | null>(null)
+  const deleteRequestRef = useRef(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -110,14 +114,53 @@ function App() {
     rememberTrigger()
     setEditingItem(null)
     setSelectedItem(item)
+    setDeleteError(null)
+    setIsDeleting(false)
+    deleteRequestRef.current = false
     setModalMode('delete')
   }, [rememberTrigger])
 
   const handleCloseModal = useCallback(() => {
+    if (isDeleting) {
+      return
+    }
+
     setModalMode(null)
     setSelectedItem(null)
     setEditingItem(null)
-  }, [])
+    setDeleteError(null)
+  }, [isDeleting])
+
+  const handleConfirmedDelete = useCallback(async (item: InventoryItem) => {
+    if (deleteRequestRef.current || isDeleting) {
+      return
+    }
+
+    deleteRequestRef.current = true
+    setIsDeleting(true)
+    setDeleteError(null)
+
+    try {
+      await softDeleteInventory(item.id)
+
+      const editButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('button[data-inventory-action="edit"]'))
+      const deletedButtonIndex = editButtons.findIndex((button) => button.dataset.inventoryItemId === String(item.id))
+      modalTriggerRef.current = editButtons[deletedButtonIndex + 1] ?? editButtons[deletedButtonIndex - 1] ?? addItemTriggerRef.current
+
+      setListState((current) =>
+        current.status === 'success'
+          ? { status: 'success', items: current.items.filter((currentItem) => currentItem.id !== item.id) }
+          : current,
+      )
+      setModalMode(null)
+      setSelectedItem(null)
+    } catch {
+      setDeleteError(`Unable to delete “${item.name}”. Please try again.`)
+    } finally {
+      deleteRequestRef.current = false
+      setIsDeleting(false)
+    }
+  }, [isDeleting])
 
   const handleCreated = useCallback((item: InventoryItem) => {
     listRequestRef.current?.abort()
@@ -213,6 +256,17 @@ function App() {
           triggerRef={modalTriggerRef}
           onClose={handleCloseModal}
           onSaved={handleUpdated}
+        />
+      ) : null}
+
+      {modalMode === 'delete' ? (
+        <DeleteConfirmationModal
+          item={selectedItem}
+          deleting={isDeleting}
+          error={deleteError}
+          triggerRef={modalTriggerRef}
+          onCancel={handleCloseModal}
+          onConfirm={handleConfirmedDelete}
         />
       ) : null}
     </main>
