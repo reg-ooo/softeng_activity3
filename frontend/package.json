@@ -12,6 +12,7 @@
   "dependencies": {
     "@rolldown/binding-darwin-arm64": "^1.2.3",
     "axios": "^1.19.0",
+    "lucide-react": "^1.29.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
