@@ -48,10 +48,12 @@ function App() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const modalTriggerRef = useRef<HTMLElement | null>(null)
   const addItemTriggerRef = useRef<HTMLButtonElement>(null)
+  const listRequestRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
     let isCurrentRequest = true
+    listRequestRef.current = controller
 
     setListState({ status: 'loading' })
 
@@ -75,6 +77,9 @@ function App() {
     return () => {
       isCurrentRequest = false
       controller.abort()
+      if (listRequestRef.current === controller) {
+        listRequestRef.current = null
+      }
     }
   }, [reloadToken])
 
@@ -106,6 +111,8 @@ function App() {
   }, [])
 
   const handleCreated = useCallback((item: InventoryItem) => {
+    listRequestRef.current?.abort()
+    listRequestRef.current = null
     setListState((current) =>
       current.status === 'success'
         ? {
@@ -163,13 +170,15 @@ function App() {
         <InventoryGrid items={listState.items} onAdd={handleAdd} onEdit={handleEdit} onDelete={handleDelete} />
       ) : null}
 
-      <InventoryItemFormModal
-        mode="create"
-        open={modalMode === 'add'}
-        triggerRef={modalTriggerRef}
-        onClose={handleCloseModal}
-        onSaved={handleCreated}
-      />
+      {modalMode === 'add' ? (
+        <InventoryItemFormModal
+          mode="create"
+          open
+          triggerRef={modalTriggerRef}
+          onClose={handleCloseModal}
+          onSaved={handleCreated}
+        />
+      ) : null}
     </main>
   )
 }

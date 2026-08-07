@@ -3,16 +3,12 @@ import {
   useId,
   useRef,
   useState,
-  type ChangeEvent,
-  type DragEvent,
   type FormEvent,
   type RefObject,
 } from 'react'
-import { ImageUp, LoaderCircle, RefreshCw, Trash2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { createInventory } from '../../lib/inventoryApi'
 import {
-  INVENTORY_IMAGE_ACCEPT,
-  formatFileSize,
   validateInventoryField,
   validateInventoryImage,
   validateInventoryValues,
@@ -22,6 +18,7 @@ import {
 } from '../../lib/inventoryValidation'
 import type { InventoryItem } from '../../types/inventory'
 import { Modal } from '../ui/Modal'
+import { InventoryImageField } from './InventoryImageField'
 
 type InventoryItemFormModalProps = {
   mode: 'create' | 'edit'
@@ -61,15 +58,11 @@ export function InventoryItemFormModal({
 }: InventoryItemFormModalProps) {
   const [values, setValues] = useState<InventoryFormValues>(emptyValues)
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [touched, setTouched] = useState<TouchedFields>(untouchedFields)
   const [fieldErrors, setFieldErrors] = useState<InventoryFieldErrors>({})
   const [fileError, setFileError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const previewUrlRef = useRef<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const dropzoneRef = useRef<HTMLButtonElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
   const fieldRefs = useRef<Record<InventoryScalarField, HTMLInputElement | HTMLTextAreaElement | null>>({
@@ -80,25 +73,13 @@ export function InventoryItemFormModal({
   })
   const descriptionId = useId()
   const fieldIdPrefix = useId()
-  const fileInputId = useId()
-  const fileErrorId = useId()
   const submitErrorId = useId()
-
-  function revokePreviewUrl() {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-      previewUrlRef.current = null
-    }
-  }
 
   useEffect(() => {
     if (!open) {
-      revokePreviewUrl()
       return
     }
 
-    revokePreviewUrl()
-    setPreviewUrl(null)
     setImageFile(null)
     setValues(
       mode === 'edit' && item
@@ -115,15 +96,7 @@ export function InventoryItemFormModal({
     setFileError(null)
     setSubmitError(null)
     setIsSubmitting(false)
-    setIsDragging(false)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
   }, [item, mode, open])
-
-  useEffect(() => {
-    return () => revokePreviewUrl()
-  }, [])
 
   const isCreateMode = mode === 'create'
   const title = isCreateMode ? 'Add Item' : 'Edit Item'
@@ -150,66 +123,6 @@ export function InventoryItemFormModal({
       ...current,
       [field]: validateInventoryField(field, values[field]),
     }))
-  }
-
-  function openFilePicker() {
-    if (!fileInputRef.current || isSubmitting) {
-      return
-    }
-
-    fileInputRef.current.value = ''
-    fileInputRef.current.click()
-  }
-
-  function selectImage(file: File) {
-    const error = validateInventoryImage(file)
-    setSubmitError(null)
-
-    if (error) {
-      setFileError(error)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-      return
-    }
-
-    revokePreviewUrl()
-    const nextPreviewUrl = URL.createObjectURL(file)
-    previewUrlRef.current = nextPreviewUrl
-    setPreviewUrl(nextPreviewUrl)
-    setImageFile(file)
-    setFileError(null)
-  }
-
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (file) {
-      selectImage(file)
-    }
-  }
-
-  function handleDrop(event: DragEvent<HTMLButtonElement>) {
-    event.preventDefault()
-    setIsDragging(false)
-    if (isSubmitting) {
-      return
-    }
-
-    const file = event.dataTransfer.files[0]
-    if (file) {
-      selectImage(file)
-    }
-  }
-
-  function removeImage() {
-    revokePreviewUrl()
-    setPreviewUrl(null)
-    setImageFile(null)
-    setFileError(null)
-    setSubmitError(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
   }
 
   function requestClose() {
@@ -390,76 +303,21 @@ export function InventoryItemFormModal({
             </div>
           </div>
 
-          <div className="inventory-image-field">
-            <div className="inventory-image-field__label">
-              <label htmlFor={fileInputId}>Product image</label>
-              <span>Optional</span>
-            </div>
-            <input
-              className="visually-hidden-file-input"
-              id={fileInputId}
-              ref={fileInputRef}
-              type="file"
-              tabIndex={-1}
-              accept={INVENTORY_IMAGE_ACCEPT}
-              onChange={handleFileChange}
-              disabled={isSubmitting}
-              aria-invalid={Boolean(fileError)}
-              aria-describedby={fileError ? fileErrorId : undefined}
-            />
-            <button
-              className={`inventory-image-dropzone${isDragging ? ' inventory-image-dropzone--dragging' : ''}`}
-              ref={dropzoneRef}
-              type="button"
-              onClick={openFilePicker}
-              onDragEnter={(event) => {
-                event.preventDefault()
-                if (!isSubmitting) setIsDragging(true)
-              }}
-              onDragOver={(event) => event.preventDefault()}
-              onDragLeave={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragging(false)
-              }}
-              onDrop={handleDrop}
-              disabled={isSubmitting}
-              aria-invalid={Boolean(fileError)}
-              aria-describedby={fileError ? fileErrorId : undefined}
-            >
-              <ImageUp aria-hidden="true" />
-              <span>Choose an image or drag and drop</span>
-              <small>PNG, JPG, WEBP or GIF up to 10MB</small>
-            </button>
-            {fileError ? (
-              <div className="inventory-image-field__error-row">
-                <p className="inventory-form__error" id={fileErrorId}>
-                  {fileError}
-                </p>
-                <button type="button" onClick={() => setFileError(null)} disabled={isSubmitting} aria-label="Dismiss image error">
-                  Dismiss
-                </button>
-              </div>
-            ) : null}
-
-            {imageFile && previewUrl ? (
-              <div className="inventory-image-selection">
-                <img src={previewUrl} alt={`Preview of ${values.name.trim() || imageFile.name}`} />
-                <div className="inventory-image-selection__details">
-                  <span title={imageFile.name}>{imageFile.name}</span>
-                  <small>{formatFileSize(imageFile.size)}</small>
-                </div>
-                <div className="inventory-image-selection__actions">
-                  <button type="button" onClick={openFilePicker} disabled={isSubmitting}>
-                    <RefreshCw aria-hidden="true" />
-                    Replace
-                  </button>
-                  <button className="inventory-image-selection__remove" type="button" onClick={removeImage} disabled={isSubmitting}>
-                    <Trash2 aria-hidden="true" />
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <InventoryImageField
+            file={imageFile}
+            error={fileError}
+            disabled={isSubmitting}
+            itemName={values.name}
+            controlRef={dropzoneRef}
+            onFileChange={(nextFile) => {
+              setImageFile(nextFile)
+              setSubmitError(null)
+            }}
+            onErrorChange={(nextError) => {
+              setFileError(nextError)
+              setSubmitError(null)
+            }}
+          />
 
           {submitError ? (
             <p className="inventory-form__submit-error" id={submitErrorId} role="alert" aria-live="assertive">

@@ -392,12 +392,12 @@
 }
 
 .inventory-form-modal .modal__header .icon-button {
-  margin: -8px -8px 0 0;
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-1)) 0 0;
   color: var(--color-text);
 }
 
 .inventory-form__description {
-  margin: 2px var(--space-4) 0;
+  margin: 0 var(--space-4);
   color: var(--color-muted);
   font-size: 14px;
   line-height: 1.5;
@@ -413,7 +413,7 @@
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .form-field label,
@@ -443,13 +443,13 @@
 }
 
 .form-field > input {
-  height: 42px;
-  padding: 9px 12px;
+  height: 40px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .form-field textarea {
-  min-height: 76px;
-  padding: 10px 12px;
+  min-height: 80px;
+  padding: var(--space-1) var(--space-2);
   resize: vertical;
 }
 
@@ -483,7 +483,7 @@
 }
 
 .price-input {
-  height: 42px;
+  height: 40px;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -504,7 +504,7 @@
 }
 
 .price-input__prefix {
-  min-width: 42px;
+  min-width: 40px;
   border-right: 1px solid var(--color-border);
   display: grid;
   place-items: center;
@@ -516,7 +516,7 @@
 
 .price-input input {
   height: 100%;
-  padding: 9px 12px;
+  padding: var(--space-1) var(--space-2);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -557,7 +557,7 @@
 
 .inventory-image-field {
   display: grid;
-  gap: 10px;
+  gap: var(--space-1);
 }
 
 .inventory-image-field__label {
@@ -593,7 +593,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   cursor: pointer;
   color: var(--color-text);
   background: var(--color-surface);
@@ -619,9 +619,9 @@
 }
 
 .inventory-image-dropzone svg {
-  width: 34px;
-  height: 34px;
-  margin-bottom: 4px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0;
   color: var(--color-muted);
   stroke-width: 1.6;
 }
@@ -651,7 +651,7 @@
 .inventory-image-selection__details {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .inventory-image-selection__details span {
@@ -675,11 +675,11 @@
 }
 
 .inventory-image-selection__actions button {
-  padding: 8px 0;
+  padding: var(--space-1) 0;
   border: 0;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
   cursor: pointer;
   color: var(--color-primary);
   background: transparent;
@@ -703,7 +703,7 @@
 
 .inventory-form__submit-error {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--color-danger);
   border-radius: var(--radius-sm);
   color: var(--color-danger);
@@ -729,7 +729,7 @@
 }
 
 .inventory-form__spinner {
-  animation: spin 800ms linear infinite;
+  animation: spin var(--motion-slow) linear infinite;
 }
 
 @keyframes spin {
