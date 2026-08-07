@@ -11,4 +11,5 @@ public interface InventoryService {
     Inventory create(CreateInventoryDTO data, MultipartFile image);
     List<Inventory> findAll();
     Inventory update(Long id, UpdateInventoryDTO data, MultipartFile image);
+    Inventory softDelete(Long id);
 }

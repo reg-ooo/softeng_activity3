@@ -83,6 +83,23 @@ public class InventoryServiceImpl implements InventoryService {
         return item;
     }
 
+    @Override
+    public Inventory softDelete(Long id) {
+        Inventory item = inventoryRepository.findByIdAndIsDeletedFalse(id).orElse(null);
+
+        if (item == null) {
+            throw new ResponseStatusException(NOT_FOUND, "Request not found");
+        }
+
+        uploadService.deleteImage(item.getImagePath());
+        item.setImagePath(null);
+        item.setDeleted(true);
+
+        inventoryRepository.save(item);
+
+        return item;
+    }
+
     private void validatePayload(InventoryPayload data) {
         if(data.getName() == null || data.getName().isEmpty()){
             throw new ResponseStatusException(BAD_REQUEST, "Name of item is required");

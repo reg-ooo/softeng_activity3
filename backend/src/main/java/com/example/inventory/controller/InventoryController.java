@@ -63,4 +63,10 @@ public class InventoryController {
         Inventory inventory = inventoryService.update(id, data, image);
         return ResponseEntity.status(200).body(inventory);
     }
+
+    @PatchMapping("/delete/{id}")
+    public ResponseEntity<Inventory> softDeleteInventory(@PathVariable Long id) {
+        Inventory inventory = inventoryService.softDelete(id);
+        return ResponseEntity.ok(inventory);
+    }
 }
