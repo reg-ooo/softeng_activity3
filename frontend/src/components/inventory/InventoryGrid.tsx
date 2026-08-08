@@ -5,18 +5,19 @@ import type { InventoryItem } from '../../types/inventory'
 
 interface InventoryGridProps {
   items: InventoryItem[]
+  hasActiveFilters?: boolean
   onAdd: () => void
   onEdit: (item: InventoryItem) => void
   onDelete: (item: InventoryItem) => void
 }
 
-export function InventoryGrid({ items, onAdd, onEdit, onDelete }: InventoryGridProps) {
+export function InventoryGrid({ items, hasActiveFilters = false, onAdd, onEdit, onDelete }: InventoryGridProps) {
   if (items.length === 0) {
     return (
       <section className="state-panel">
         <PackageOpen className="state-panel__icon" />
-        <h2>No inventory items yet</h2>
-        <p>Add your first product to start tracking stock.</p>
+        <h2>{hasActiveFilters ? 'No matching inventory items.' : 'No inventory items yet.'}</h2>
+        <p>{hasActiveFilters ? 'Try a different search or category.' : 'Add your first product to start tracking stock.'}</p>
         <button className="button button--primary" type="button" onClick={onAdd}>
           <Plus />
           Add Item

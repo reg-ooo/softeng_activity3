@@ -13,6 +13,14 @@ export async function listInventory(signal?: AbortSignal): Promise<InventoryItem
   return response.data
 }
 
+export async function searchInventory(query: string, signal?: AbortSignal): Promise<InventoryItem[]> {
+  const response = await api.get<InventoryItem[]>('/inventory/search', {
+    params: { query },
+    signal,
+  })
+  return response.data
+}
+
 export async function createInventory(formData: FormData): Promise<InventoryItem> {
   const response = await api.post<InventoryItem>('/inventory', formData)
   return response.data

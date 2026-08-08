@@ -6,9 +6,9 @@ import {
 } from 'react'
 import { LoaderCircle } from 'lucide-react'
 import { createInventory, updateInventory } from '../../lib/inventoryApi'
+import { INVENTORY_CATEGORIES } from '../../lib/inventoryConstants'
 import {
   getLocalDateInputValue,
-  INVENTORY_CATEGORIES,
   validateInventoryImage,
   validateInventoryValues,
   type InventoryFieldErrors,

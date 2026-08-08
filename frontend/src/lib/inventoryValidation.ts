@@ -1,3 +1,7 @@
+import { INVENTORY_CATEGORIES } from './inventoryConstants'
+
+export { INVENTORY_CATEGORIES } from './inventoryConstants'
+
 export const MAX_INVENTORY_IMAGE_SIZE = 10 * 1024 * 1024
 
 export const INVENTORY_IMAGE_ACCEPT = '.png,.jpg,.jpeg,.webp,.gif,image/png,image/jpeg,image/webp,image/gif'
@@ -13,15 +17,6 @@ const allowedImageExtensions = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif'])
 const quantityPattern = /^(?:0|[1-9]\d*)$/
 const pricePattern = /^(?:[1-9]\d*(?:\.\d+)?|0?\.\d+)$/
 const deliveryDatePattern = /^\d{4}-\d{2}-\d{2}$/
-
-export const INVENTORY_CATEGORIES = [
-  'Peripherals',
-  'Tools',
-  'Electronics',
-  'Office Supplies',
-  'Furniture',
-  'Other',
-] as const
 
 const inventoryCategorySet = new Set<string>(INVENTORY_CATEGORIES)
 
