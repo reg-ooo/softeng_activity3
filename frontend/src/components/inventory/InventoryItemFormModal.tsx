@@ -7,6 +7,8 @@ import {
 import { LoaderCircle } from 'lucide-react'
 import { createInventory, updateInventory } from '../../lib/inventoryApi'
 import {
+  getLocalDateInputValue,
+  INVENTORY_CATEGORIES,
   validateInventoryImage,
   validateInventoryValues,
   type InventoryFieldErrors,
@@ -33,9 +35,18 @@ const emptyValues: InventoryFormValues = {
   description: '',
   quantity: '',
   price: '',
+  category: '',
+  expectedDeliveryDate: '',
 }
 
-const scalarFields: InventoryScalarField[] = ['name', 'description', 'quantity', 'price']
+const scalarFields: InventoryScalarField[] = [
+  'name',
+  'description',
+  'quantity',
+  'price',
+  'category',
+  'expectedDeliveryDate',
+]
 const saveErrorMessage = 'We couldn\'t save this item. Please try again.'
 const quantityInputPattern = /^(?:|0|[1-9]\d*)$/
 const priceInputPattern = /^(?:|0?(?:\.\d*)?|[1-9]\d*(?:\.\d*)?)$/
@@ -71,6 +82,8 @@ export function InventoryItemFormModal({
             description: item.description,
             quantity: String(item.quantity),
             price: String(item.price),
+            category: item.category,
+            expectedDeliveryDate: item.expectedDeliveryDate,
           }
         : emptyValues,
     )
@@ -85,6 +98,7 @@ export function InventoryItemFormModal({
   const helperCopy = isCreateMode
     ? 'Enter the details for the new inventory item.'
     : 'Update the details for this inventory item.'
+  const minDeliveryDate = getLocalDateInputValue()
   const hasKnownErrors = Object.values(fieldErrors).some(Boolean) || Boolean(fileError)
 
   function setFieldValue(field: InventoryScalarField, value: string) {
@@ -138,6 +152,8 @@ export function InventoryItemFormModal({
     formData.append('description', values.description.trim())
     formData.append('quantity', values.quantity)
     formData.append('price', values.price)
+    formData.append('category', values.category)
+    formData.append('expectedDeliveryDate', values.expectedDeliveryDate)
     if (isCreateMode && imageFile) {
       formData.append('image', imageFile)
     }
@@ -226,6 +242,47 @@ export function InventoryItemFormModal({
               disabled={isSubmitting}
             />
             {renderError('description')}
+          </div>
+
+          <div className="inventory-form__details-row">
+            <div className="form-field">
+              <label htmlFor={`${fieldIdPrefix}-category`}>
+                Category <span>*</span>
+              </label>
+              <select
+                id={`${fieldIdPrefix}-category`}
+                className={fieldErrors.category ? 'field-invalid' : undefined}
+                value={values.category}
+                onChange={(event) => setFieldValue('category', event.target.value)}
+                required
+                disabled={isSubmitting}
+              >
+                <option value="">Select a category</option>
+                {INVENTORY_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              {renderError('category')}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor={`${fieldIdPrefix}-expected-delivery-date`}>
+                Expected delivery date <span>*</span>
+              </label>
+              <input
+                id={`${fieldIdPrefix}-expected-delivery-date`}
+                type="date"
+                className={fieldErrors.expectedDeliveryDate ? 'field-invalid' : undefined}
+                value={values.expectedDeliveryDate}
+                min={minDeliveryDate}
+                onChange={(event) => setFieldValue('expectedDeliveryDate', event.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+              {renderError('expectedDeliveryDate')}
+            </div>
           </div>
 
           <div className="inventory-form__number-row">

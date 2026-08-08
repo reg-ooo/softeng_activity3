@@ -538,6 +538,7 @@
 }
 
 .form-field input,
+.form-field select,
 .form-field textarea {
   width: 100%;
   border: 1px solid var(--color-border);
@@ -548,7 +549,8 @@
   line-height: 1.5;
 }
 
-.form-field > input {
+.form-field > input,
+.form-field > select {
   height: 40px;
   padding: var(--space-1) var(--space-2);
 }
@@ -566,12 +568,14 @@
 }
 
 .form-field > input:hover:not(:disabled),
+.form-field > select:hover:not(:disabled),
 .form-field textarea:hover:not(:disabled),
 .price-input:hover:not(:has(input:disabled)) {
   border-color: var(--color-muted);
 }
 
 .form-field > input:focus-visible,
+.form-field > select:focus-visible,
 .form-field textarea:focus-visible,
 .price-input:focus-within {
   border-color: var(--color-primary);
@@ -580,12 +584,19 @@
 }
 
 .form-field > input.field-invalid,
+.form-field > select.field-invalid,
 .form-field textarea.field-invalid,
 .price-input--invalid {
   border-color: var(--color-danger);
 }
 
 .inventory-form__number-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.inventory-form__details-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
@@ -917,6 +928,10 @@
   }
 
   .inventory-form__number-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inventory-form__details-row {
     grid-template-columns: minmax(0, 1fr);
   }
 

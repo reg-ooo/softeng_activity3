@@ -12,12 +12,59 @@ const allowedImageMimeTypes = new Set([
 const allowedImageExtensions = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif'])
 const quantityPattern = /^(?:0|[1-9]\d*)$/
 const pricePattern = /^(?:[1-9]\d*(?:\.\d+)?|0?\.\d+)$/
+const deliveryDatePattern = /^\d{4}-\d{2}-\d{2}$/
 
-export type InventoryScalarField = 'name' | 'description' | 'quantity' | 'price'
+export const INVENTORY_CATEGORIES = [
+  'Peripherals',
+  'Tools',
+  'Electronics',
+  'Office Supplies',
+  'Furniture',
+  'Other',
+] as const
+
+const inventoryCategorySet = new Set<string>(INVENTORY_CATEGORIES)
+
+export type InventoryScalarField =
+  | 'name'
+  | 'description'
+  | 'quantity'
+  | 'price'
+  | 'category'
+  | 'expectedDeliveryDate'
 
 export type InventoryFormValues = Record<InventoryScalarField, string>
 
 export type InventoryFieldErrors = Partial<Record<InventoryScalarField, string>>
+
+export function getLocalDateInputValue(date = new Date()): string {
+  const year = String(date.getFullYear()).padStart(4, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function isValidCalendarDate(value: string): boolean {
+  if (!deliveryDatePattern.test(value)) {
+    return false
+  }
+
+  const [year, month, day] = value.split('-').map(Number)
+  if (month < 1 || month > 12 || day < 1) {
+    return false
+  }
+
+  const daysInMonth = new Date(year, month, 0).getDate()
+  return day <= daysInMonth
+}
+
+export function isValidInventoryDeliveryDate(
+  value: string,
+  today = getLocalDateInputValue(),
+): boolean {
+  return isValidCalendarDate(value) && value >= today
+}
 
 export function validateInventoryField(field: InventoryScalarField, value: string): string | undefined {
   if (field === 'name') {
@@ -32,10 +79,20 @@ export function validateInventoryField(field: InventoryScalarField, value: strin
     return quantityPattern.test(value) ? undefined : 'Enter a whole number zero or greater.'
   }
 
-  const numericPrice = Number(value)
-  return pricePattern.test(value) && Number.isFinite(numericPrice) && numericPrice > 0
+  if (field === 'price') {
+    const numericPrice = Number(value)
+    return pricePattern.test(value) && Number.isFinite(numericPrice) && numericPrice > 0
+      ? undefined
+      : 'Enter a price greater than zero.'
+  }
+
+  if (field === 'category') {
+    return inventoryCategorySet.has(value) ? undefined : 'Select a category.'
+  }
+
+  return isValidInventoryDeliveryDate(value)
     ? undefined
-    : 'Enter a price greater than zero.'
+    : 'Choose a delivery date that is today or later.'
 }
 
 export function validateInventoryValues(values: InventoryFormValues): InventoryFieldErrors {
