@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "inventory")
@@ -31,6 +32,12 @@ public class Inventory {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "expected_delivery_date")
+    private LocalDate expectedDeliveryDate;
+
+    @Column(name = "category")
+    private String category;
+
     public Inventory() {
         // Required by JPA.
     }
@@ -44,6 +51,20 @@ public class Inventory {
             String imagePath,
             boolean isDeleted
     ) {
+        this(id, name, description, quantity, price, imagePath, isDeleted, null, null);
+    }
+
+    public Inventory(
+            Long id,
+            String name,
+            String description,
+            Integer quantity,
+            BigDecimal price,
+            String imagePath,
+            boolean isDeleted,
+            String category,
+            LocalDate expectedDeliveryDate
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -51,6 +72,8 @@ public class Inventory {
         this.price = price;
         this.imagePath = imagePath;
         this.isDeleted = isDeleted;
+        this.category = category;
+        this.expectedDeliveryDate = expectedDeliveryDate;
     }
 
     public Long getId() {
@@ -107,5 +130,21 @@ public class Inventory {
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public LocalDate getExpectedDeliveryDate() {
+        return expectedDeliveryDate;
+    }
+
+    public void setExpectedDeliveryDate(LocalDate expectedDeliveryDate) {
+        this.expectedDeliveryDate = expectedDeliveryDate;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

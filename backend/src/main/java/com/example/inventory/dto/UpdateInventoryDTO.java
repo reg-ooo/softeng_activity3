@@ -1,8 +1,10 @@
-package main.java.com.example.inventory.dto;
+package com.example.inventory.dto;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 
-import com.example.inventory.dto.InventoryPayload;
+import java.time.LocalDate;
 
 public class UpdateInventoryDTO implements InventoryPayload {
     private String name;
@@ -11,6 +13,10 @@ public class UpdateInventoryDTO implements InventoryPayload {
     private BigDecimal price;
     private String imagePath;
     private boolean deletedImage;
+    private String category;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate expectedDeliveryDate;
 
     public UpdateInventoryDTO() {
     }
@@ -23,12 +29,27 @@ public class UpdateInventoryDTO implements InventoryPayload {
             String imagePath,
             boolean deletedImage
     ) {
+        this(name, description, quantity, price, imagePath, deletedImage, null, null);
+    }
+
+    public UpdateInventoryDTO(
+            String name,
+            String description,
+            Integer quantity,
+            BigDecimal price,
+            String imagePath,
+            boolean deletedImage,
+            String category,
+            LocalDate expectedDeliveryDate
+    ) {
         this.name = name;
         this.description = description;
         this.quantity = quantity;
         this.price = price;
         this.imagePath = imagePath;
         this.deletedImage = deletedImage;
+        this.category = category;
+        this.expectedDeliveryDate = expectedDeliveryDate;
     }
 
     public String getName() {
@@ -77,5 +98,23 @@ public class UpdateInventoryDTO implements InventoryPayload {
 
     public void setDeletedImage(boolean deletedImage) {
         this.deletedImage = deletedImage;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    @Override
+    public LocalDate getExpectedDeliveryDate() {
+        return expectedDeliveryDate;
+    }
+
+    public void setExpectedDeliveryDate(LocalDate expectedDeliveryDate) {
+        this.expectedDeliveryDate = expectedDeliveryDate;
     }
 }

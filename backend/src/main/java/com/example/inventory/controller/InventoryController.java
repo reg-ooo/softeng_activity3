@@ -1,9 +1,9 @@
 package com.example.inventory.controller;
 
 import com.example.inventory.dto.CreateInventoryDTO;
+import com.example.inventory.dto.UpdateInventoryDTO;
 import com.example.inventory.model.Inventory;
 import com.example.inventory.service.InventoryService;
-import main.java.com.example.inventory.dto.UpdateInventoryDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

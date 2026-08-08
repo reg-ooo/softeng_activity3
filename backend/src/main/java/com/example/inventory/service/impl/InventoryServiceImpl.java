@@ -2,11 +2,11 @@ package com.example.inventory.service.impl;
 
 import com.example.inventory.dto.CreateInventoryDTO;
 import com.example.inventory.dto.InventoryPayload;
+import com.example.inventory.dto.UpdateInventoryDTO;
 import com.example.inventory.model.Inventory;
 import com.example.inventory.repository.InventoryRepository;
 import com.example.inventory.service.InventoryService;
 import com.example.inventory.service.UploadService;
-import main.java.com.example.inventory.dto.UpdateInventoryDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,6 +43,8 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setDescription(data.getDescription());
         inventory.setQuantity(data.getQuantity());
         inventory.setPrice(data.getPrice());
+        inventory.setCategory(data.getCategory());
+        inventory.setExpectedDeliveryDate(data.getExpectedDeliveryDate());
 
         return inventoryRepository.save(inventory);
     }
@@ -78,6 +80,8 @@ public class InventoryServiceImpl implements InventoryService {
         item.setDescription(data.getDescription());
         item.setQuantity(data.getQuantity());
         item.setPrice(data.getPrice());
+        item.setCategory(data.getCategory());
+        item.setExpectedDeliveryDate(data.getExpectedDeliveryDate());
 
         inventoryRepository.save(item);
 
@@ -116,6 +120,14 @@ public class InventoryServiceImpl implements InventoryService {
 
         if(data.getPrice() == null || data.getPrice().compareTo(BigDecimal.ZERO) <= 0 ){
             throw new ResponseStatusException(BAD_REQUEST, "Price of item is invalid");
+        }
+
+        if (data.getCategory() == null || data.getCategory().isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Category of item is required");
+        }
+
+        if (data.getExpectedDeliveryDate() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Expected delivery date is required");
         }
     }
 
