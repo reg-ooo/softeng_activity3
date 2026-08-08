@@ -55,6 +55,17 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    public List<Inventory> search(String query) {
+        String normalizedQuery = normalize(query);
+
+        if (normalizedQuery == null) {
+            return inventoryRepository.findAllByIsDeletedFalse();
+        }
+
+        return inventoryRepository.searchActiveInventory(normalizedQuery);
+    }
+
+    @Override
     public Inventory update(Long id, UpdateInventoryDTO data, MultipartFile file){
         Inventory item = inventoryRepository.findByIdAndIsDeletedFalse(id).orElse(null);
 
@@ -156,6 +167,15 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         return !data.getImagePath().equals(item.getImagePath());
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalizedValue = value.trim();
+        return normalizedValue.isEmpty() ? null : normalizedValue;
     }
 
 }

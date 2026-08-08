@@ -48,6 +48,13 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.findAll());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Inventory>> search(
+            @RequestParam(value = "query", required = false) String query
+    ) {
+        return ResponseEntity.ok(inventoryService.search(query));
+    }
+
     @PutMapping(value = "/{id}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )

@@ -10,6 +10,7 @@ import java.util.List;
 public interface InventoryService {
     Inventory create(CreateInventoryDTO data, MultipartFile image);
     List<Inventory> findAll();
+    List<Inventory> search(String query);
     Inventory update(Long id, UpdateInventoryDTO data, MultipartFile image);
     Inventory softDelete(Long id);
 }
