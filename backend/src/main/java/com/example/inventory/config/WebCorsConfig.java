@@ -37,7 +37,7 @@ public class WebCorsConfig implements WebMvcConfigurer {
                                 .toAbsolutePath()
                                 .normalize()
                                 .toUri()
-                                .toString()
+                                .toString() + "/"
                 );
     }
 }

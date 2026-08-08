@@ -290,7 +290,7 @@ export function InventoryItemFormModal({
               <input
                 id={`${fieldIdPrefix}-quantity`}
                 ref={(node) => { fieldRefs.current.quantity = node }}
-                type="text"
+                type="number"
                 inputMode="numeric"
                 value={values.quantity}
                 onChange={(event) => setFieldValue('quantity', event.target.value)}
@@ -313,7 +313,7 @@ export function InventoryItemFormModal({
                 <input
                   id={`${fieldIdPrefix}-price`}
                   ref={(node) => { fieldRefs.current.price = node }}
-                  type="text"
+                  type="number"
                   inputMode="decimal"
                   value={values.price}
                   onChange={(event) => setFieldValue('price', event.target.value)}

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -111,6 +112,10 @@ public class InventoryServiceImpl implements InventoryService {
 
         if(data.getQuantity() == null || data.getQuantity() <= 0){
             throw new ResponseStatusException(BAD_REQUEST, "Quantity of item is invalid");
+        }
+
+        if(data.getPrice() == null || data.getPrice().compareTo(BigDecimal.ZERO) <= 0 ){
+            throw new ResponseStatusException(BAD_REQUEST, "Price of item is invalid");
         }
     }
 
