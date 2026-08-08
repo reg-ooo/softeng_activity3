@@ -24,10 +24,6 @@
   --radius-lg: 12px;
   --shadow-card: 0 1px 2px rgb(15 23 42 / 4%);
   --shadow-modal: 0 24px 64px rgb(15 23 42 / 18%);
-  --focus-ring: 0 0 0 3px rgb(37 99 235 / 24%);
-  --motion-fast: 150ms;
-  --motion-standard: 200ms;
-  --motion-slow: 250ms;
 }
 
 * {
@@ -56,25 +52,4 @@ textarea {
 
 button {
   color: inherit;
-}
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[tabindex]:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
 }

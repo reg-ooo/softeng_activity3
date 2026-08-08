@@ -6,7 +6,6 @@ import {
   useState,
   type ChangeEvent,
   type DragEvent,
-  type RefObject,
 } from 'react'
 import { ImageUp, RefreshCw, Trash2 } from 'lucide-react'
 import {
@@ -18,8 +17,6 @@ import { getInventoryImageUrl } from '../../lib/inventoryApi'
 
 export type InventoryImageState = 'keep' | 'replace' | 'remove' | 'none'
 
-type ImageControlFocusTarget = 'dropzone' | 'currentReplace' | 'replacementReplace'
-
 type InventoryImageFieldProps = {
   mode: 'create' | 'edit'
   state: InventoryImageState
@@ -28,7 +25,6 @@ type InventoryImageFieldProps = {
   error: string | null
   disabled: boolean
   itemName: string
-  controlRef?: RefObject<HTMLButtonElement | null>
   onSelectionChange: (state: InventoryImageState, file: File | null) => void
   onErrorChange: (error: string | null) => void
 }
@@ -62,7 +58,6 @@ export function InventoryImageField({
   error,
   disabled,
   itemName,
-  controlRef,
   onSelectionChange,
   onErrorChange,
 }: InventoryImageFieldProps) {
@@ -70,14 +65,7 @@ export function InventoryImageField({
   const [isDragging, setIsDragging] = useState(false)
   const [failedCurrentImageUrl, setFailedCurrentImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const dropzoneButtonRef = useRef<HTMLButtonElement>(null)
-  const currentReplaceButtonRef = useRef<HTMLButtonElement>(null)
-  const currentRemoveButtonRef = useRef<HTMLButtonElement>(null)
-  const replacementReplaceButtonRef = useRef<HTMLButtonElement>(null)
-  const replacementRemoveButtonRef = useRef<HTMLButtonElement>(null)
-  const pendingFocusTargetRef = useRef<ImageControlFocusTarget | null>(null)
   const fileInputId = useId()
-  const fileErrorId = useId()
   const normalizedCurrentImagePath = currentImagePath?.trim() ?? ''
   const hasOriginalImage = mode === 'edit' && Boolean(normalizedCurrentImagePath)
   const currentImageUrl = hasOriginalImage
@@ -111,57 +99,6 @@ export function InventoryImageField({
     setFailedCurrentImageUrl(null)
   }, [currentImageUrl])
 
-  useLayoutEffect(() => {
-    if (!controlRef) {
-      return
-    }
-
-    const assignedControl = mode === 'create'
-      ? dropzoneButtonRef.current
-      : showCurrentImage
-        ? currentReplaceButtonRef.current
-        : showReplacement
-          ? replacementReplaceButtonRef.current
-          : dropzoneButtonRef.current
-    controlRef.current = assignedControl
-
-    return () => {
-      if (controlRef.current === assignedControl) {
-        controlRef.current = null
-      }
-    }
-  }, [controlRef, mode, showCurrentImage, showReplacement])
-
-  useLayoutEffect(() => {
-    const pendingTarget = pendingFocusTargetRef.current
-    if (!pendingTarget || disabled) {
-      return
-    }
-
-    const target = pendingTarget === 'dropzone'
-      ? dropzoneButtonRef.current
-      : pendingTarget === 'currentReplace'
-        ? currentReplaceButtonRef.current
-        : replacementReplaceButtonRef.current
-
-    if (target) {
-      pendingFocusTargetRef.current = null
-      target.focus()
-    }
-  }, [disabled, error, file, mode, previewUrl, state])
-
-  function visibleControlTarget(): ImageControlFocusTarget {
-    if (mode === 'create') {
-      return 'dropzone'
-    }
-
-    if (showCurrentImage) {
-      return 'currentReplace'
-    }
-
-    return showReplacement ? 'replacementReplace' : 'dropzone'
-  }
-
   function openFilePicker() {
     if (!fileInputRef.current || disabled) {
       return
@@ -178,17 +115,9 @@ export function InventoryImageField({
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
-      const currentTarget = visibleControlTarget()
-      const visibleControl = currentTarget === 'dropzone'
-        ? dropzoneButtonRef.current
-        : currentTarget === 'currentReplace'
-          ? currentReplaceButtonRef.current
-          : replacementReplaceButtonRef.current
-      visibleControl?.focus()
       return
     }
 
-    pendingFocusTargetRef.current = mode === 'create' ? 'dropzone' : 'replacementReplace'
     onSelectionChange('replace', nextFile)
     onErrorChange(null)
   }
@@ -214,9 +143,6 @@ export function InventoryImageField({
   }
 
   function removeFile() {
-    pendingFocusTargetRef.current = mode === 'create' || !hasOriginalImage
-      ? 'dropzone'
-      : 'currentReplace'
     onSelectionChange(hasOriginalImage ? 'keep' : 'none', null)
     onErrorChange(null)
     if (fileInputRef.current) {
@@ -225,7 +151,6 @@ export function InventoryImageField({
   }
 
   function removeCurrentImage() {
-    pendingFocusTargetRef.current = 'dropzone'
     onSelectionChange('remove', null)
     onErrorChange(null)
     if (fileInputRef.current) {
@@ -240,24 +165,20 @@ export function InventoryImageField({
         <span>Optional</span>
       </div>
       <input
-        className="visually-hidden-file-input"
+        className="inventory-file-input"
         id={fileInputId}
         ref={fileInputRef}
         type="file"
-        tabIndex={-1}
         accept={INVENTORY_IMAGE_ACCEPT}
         onClick={(event) => {
           event.currentTarget.value = ''
         }}
         onChange={handleFileChange}
         disabled={disabled}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? fileErrorId : undefined}
       />
       {showDropzone ? (
         <button
-          className={`inventory-image-dropzone${isDragging ? ' inventory-image-dropzone--dragging' : ''}`}
-          ref={dropzoneButtonRef}
+          className={`inventory-image-dropzone${isDragging ? ' inventory-image-dropzone--dragging' : ''}${error ? ' inventory-image-dropzone--invalid' : ''}`}
           type="button"
           onClick={openFilePicker}
           onDragEnter={(event) => {
@@ -274,20 +195,16 @@ export function InventoryImageField({
           }}
           onDrop={handleDrop}
           disabled={disabled}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? fileErrorId : undefined}
         >
-          <ImageUp aria-hidden="true" />
+          <ImageUp />
           <span>Choose an image or drag and drop</span>
           <small>PNG, JPG, WEBP or GIF up to 10MB</small>
         </button>
       ) : null}
       {error ? (
         <div className="inventory-image-field__error-row">
-          <p className="inventory-form__error" id={fileErrorId}>
-            {error}
-          </p>
-          <button type="button" onClick={() => onErrorChange(null)} disabled={disabled} aria-label="Dismiss image error">
+          <p className="inventory-form__error">{error}</p>
+          <button type="button" onClick={() => onErrorChange(null)} disabled={disabled}>
             Dismiss
           </button>
         </div>
@@ -303,7 +220,7 @@ export function InventoryImageField({
             />
           ) : (
             <div className="inventory-image-selection__placeholder">
-              <ImageUp aria-hidden="true" />
+              <ImageUp />
             </div>
           )}
           <div className="inventory-image-selection__details">
@@ -313,18 +230,14 @@ export function InventoryImageField({
           <div className="inventory-image-selection__actions">
             <button
               className="inventory-image-selection__replace"
-              ref={currentReplaceButtonRef}
               type="button"
               onClick={openFilePicker}
               disabled={disabled}
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? fileErrorId : undefined}
             >
               Replace image
             </button>
             <button
               className="inventory-image-selection__remove"
-              ref={currentRemoveButtonRef}
               type="button"
               onClick={removeCurrentImage}
               disabled={disabled}
@@ -344,24 +257,20 @@ export function InventoryImageField({
           </div>
           <div className="inventory-image-selection__actions">
             <button
-              ref={replacementReplaceButtonRef}
               type="button"
               onClick={openFilePicker}
               disabled={disabled}
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? fileErrorId : undefined}
             >
-              <RefreshCw aria-hidden="true" />
+              <RefreshCw />
               Replace
             </button>
             <button
               className="inventory-image-selection__remove"
-              ref={replacementRemoveButtonRef}
               type="button"
               onClick={removeFile}
               disabled={disabled}
             >
-              <Trash2 aria-hidden="true" />
+              <Trash2 />
               Remove
             </button>
           </div>

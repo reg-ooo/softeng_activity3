@@ -12,12 +12,12 @@ interface InventoryGridProps {
 export function InventoryGrid({ items, onAdd, onEdit, onDelete }: InventoryGridProps) {
   if (items.length === 0) {
     return (
-      <section className="state-panel" aria-labelledby="empty-state-title">
-        <PackageOpen className="state-panel__icon" aria-hidden="true" />
-        <h2 id="empty-state-title">No inventory items yet</h2>
+      <section className="state-panel">
+        <PackageOpen className="state-panel__icon" />
+        <h2>No inventory items yet</h2>
         <p>Add your first product to start tracking stock.</p>
         <button className="button button--primary" type="button" onClick={onAdd}>
-          <Plus aria-hidden="true" />
+          <Plus />
           Add Item
         </button>
       </section>
@@ -25,7 +25,7 @@ export function InventoryGrid({ items, onAdd, onEdit, onDelete }: InventoryGridP
   }
 
   return (
-    <section className="inventory-grid" aria-label="Inventory items">
+    <section className="inventory-grid">
       {items.map((item) => (
         <InventoryCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
       ))}

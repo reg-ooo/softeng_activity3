@@ -37,8 +37,8 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
             onError={() => setFailedImageUrl(imageUrl)}
           />
         ) : (
-          <div className="inventory-card__image-placeholder" role="img" aria-label={`No image available for ${item.name}`}>
-            <ImageOff aria-hidden="true" />
+          <div className="inventory-card__image-placeholder">
+            <ImageOff />
           </div>
         )}
       </div>
@@ -65,7 +65,7 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
               data-inventory-item-id={item.id}
               onClick={() => onEdit(item)}
             >
-              <Pencil aria-hidden="true" />
+              <Pencil />
               Edit
             </button>
             <button
@@ -75,7 +75,7 @@ export function InventoryCard({ item, onEdit, onDelete }: InventoryCardProps) {
               data-inventory-item-id={item.id}
               onClick={() => onDelete(item)}
             >
-              <Trash2 aria-hidden="true" />
+              <Trash2 />
               Delete
             </button>
           </div>

@@ -43,11 +43,6 @@
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
-  transition:
-    background-color var(--motion-standard) ease,
-    border-color var(--motion-standard) ease,
-    color var(--motion-standard) ease,
-    box-shadow var(--motion-standard) ease;
 }
 
 .button svg {
@@ -261,20 +256,6 @@
   line-height: 1.6;
 }
 
-.loading-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.loading-status svg {
-  animation: spin var(--motion-slow) linear infinite;
-}
-
 .inventory-card--skeleton {
   pointer-events: none;
 }
@@ -324,7 +305,6 @@
   display: grid;
   place-items: center;
   background: rgb(15 23 42 / 52%);
-  animation: backdrop-in var(--motion-fast) ease-out;
 }
 
 .modal {
@@ -334,7 +314,6 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-modal);
-  animation: modal-in var(--motion-standard) ease-out;
 }
 
 .modal__header {
@@ -364,9 +343,6 @@
   cursor: pointer;
   color: var(--color-muted);
   background: transparent;
-  transition:
-    color var(--motion-standard) ease,
-    background-color var(--motion-standard) ease;
 }
 
 .icon-button:hover {
@@ -410,18 +386,6 @@
   width: min(100%, 576px);
 }
 
-.delete-confirmation-modal .modal__header {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
-}
-
 .delete-confirmation-modal__body {
   padding: var(--space-3) var(--space-3) var(--space-2);
 }
@@ -441,14 +405,6 @@
   width: 24px;
   height: 24px;
   stroke-width: 2;
-}
-
-.delete-confirmation-modal__body h2 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 22px;
-  letter-spacing: -0.015em;
-  line-height: 1.4;
 }
 
 .delete-confirmation-modal__description {
@@ -480,10 +436,6 @@
 
 .delete-confirmation-modal__footer .delete-confirmation-modal__confirm {
   min-width: 156px;
-}
-
-.delete-confirmation-modal__spinner {
-  animation: spin var(--motion-slow) linear infinite;
 }
 
 .inventory-form__description {
@@ -527,9 +479,6 @@
   background: var(--color-surface);
   font-size: 14px;
   line-height: 1.5;
-  transition:
-    border-color var(--motion-standard) ease,
-    box-shadow var(--motion-standard) ease;
 }
 
 .form-field > input {
@@ -555,13 +504,8 @@
   border-color: var(--color-muted);
 }
 
-.form-field > input:focus,
-.form-field textarea:focus {
-  border-color: var(--color-primary);
-}
-
-.form-field > input[aria-invalid="true"],
-.form-field textarea[aria-invalid="true"],
+.form-field > input.field-invalid,
+.form-field textarea.field-invalid,
 .price-input--invalid {
   border-color: var(--color-danger);
 }
@@ -579,18 +523,6 @@
   border-radius: var(--radius-sm);
   display: flex;
   background: var(--color-surface);
-  transition:
-    border-color var(--motion-standard) ease,
-    box-shadow var(--motion-standard) ease;
-}
-
-.price-input:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: var(--focus-ring);
-}
-
-.price-input--invalid:focus-within {
-  border-color: var(--color-danger);
 }
 
 .price-input__prefix {
@@ -609,10 +541,6 @@
   padding: var(--space-1) var(--space-2);
   border: 0;
   border-radius: 0;
-  box-shadow: none;
-}
-
-.price-input input:focus-visible {
   box-shadow: none;
 }
 
@@ -661,16 +589,8 @@
   font-size: 13px;
 }
 
-.visually-hidden-file-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
+.inventory-file-input {
+  display: none;
 }
 
 .inventory-image-dropzone {
@@ -688,9 +608,6 @@
   color: var(--color-text);
   background: var(--color-surface);
   font-size: 14px;
-  transition:
-    border-color var(--motion-standard) ease,
-    background-color var(--motion-standard) ease;
 }
 
 .inventory-image-dropzone:hover:not(:disabled),
@@ -699,7 +616,7 @@
   background: var(--color-page);
 }
 
-.inventory-image-dropzone[aria-invalid="true"] {
+.inventory-image-dropzone.inventory-image-dropzone--invalid {
   border-color: var(--color-danger);
 }
 
@@ -815,9 +732,6 @@
   border-radius: var(--radius-sm);
   color: var(--color-text);
   background: var(--color-surface);
-  transition:
-    border-color var(--motion-standard) ease,
-    background-color var(--motion-standard) ease;
 }
 
 .inventory-image-selection--current .inventory-image-selection__replace:hover:not(:disabled) {
@@ -857,29 +771,6 @@
 
 .inventory-form__footer .inventory-form__submit {
   min-width: 116px;
-}
-
-.inventory-form__spinner {
-  animation: spin var(--motion-slow) linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes backdrop-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.985);
-  }
 }
 
 @media (max-width: 959px) {

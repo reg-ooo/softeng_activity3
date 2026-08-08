@@ -1,15 +1,12 @@
 import {
   useEffect,
   useId,
-  useRef,
   useState,
   type FormEvent,
-  type RefObject,
 } from 'react'
 import { LoaderCircle } from 'lucide-react'
 import { createInventory, updateInventory } from '../../lib/inventoryApi'
 import {
-  validateInventoryField,
   validateInventoryImage,
   validateInventoryValues,
   type InventoryFieldErrors,
@@ -27,12 +24,9 @@ type InventoryItemFormModalProps = {
   mode: 'create' | 'edit'
   item?: InventoryItem
   open: boolean
-  triggerRef?: RefObject<HTMLElement | null>
   onClose: () => void
   onSaved: (item: InventoryItem) => void
 }
-
-type TouchedFields = Record<InventoryScalarField, boolean>
 
 const emptyValues: InventoryFormValues = {
   name: '',
@@ -41,43 +35,26 @@ const emptyValues: InventoryFormValues = {
   price: '',
 }
 
-const untouchedFields: TouchedFields = {
-  name: false,
-  description: false,
-  quantity: false,
-  price: false,
-}
-
 const scalarFields: InventoryScalarField[] = ['name', 'description', 'quantity', 'price']
 const saveErrorMessage = 'We couldn\'t save this item. Please try again.'
+const quantityInputPattern = /^(?:|0|[1-9]\d*)$/
+const priceInputPattern = /^(?:|0?(?:\.\d*)?|[1-9]\d*(?:\.\d*)?)$/
 
 export function InventoryItemFormModal({
   mode,
   item,
   open,
-  triggerRef,
   onClose,
   onSaved,
 }: InventoryItemFormModalProps) {
   const [values, setValues] = useState<InventoryFormValues>(emptyValues)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageState, setImageState] = useState<InventoryImageState>('none')
-  const [touched, setTouched] = useState<TouchedFields>(untouchedFields)
   const [fieldErrors, setFieldErrors] = useState<InventoryFieldErrors>({})
   const [fileError, setFileError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const dropzoneRef = useRef<HTMLButtonElement>(null)
-  const nameInputRef = useRef<HTMLInputElement>(null)
-  const fieldRefs = useRef<Record<InventoryScalarField, HTMLInputElement | HTMLTextAreaElement | null>>({
-    name: null,
-    description: null,
-    quantity: null,
-    price: null,
-  })
-  const descriptionId = useId()
   const fieldIdPrefix = useId()
-  const submitErrorId = useId()
 
   useEffect(() => {
     if (!open) {
@@ -97,7 +74,6 @@ export function InventoryItemFormModal({
           }
         : emptyValues,
     )
-    setTouched(untouchedFields)
     setFieldErrors({})
     setFileError(null)
     setSubmitError(null)
@@ -115,20 +91,15 @@ export function InventoryItemFormModal({
     setValues((current) => ({ ...current, [field]: value }))
     setSubmitError(null)
 
-    if (touched[field]) {
-      setFieldErrors((current) => ({
-        ...current,
-        [field]: validateInventoryField(field, value),
-      }))
-    }
-  }
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current
+      }
 
-  function handleBlur(field: InventoryScalarField) {
-    setTouched((current) => ({ ...current, [field]: true }))
-    setFieldErrors((current) => ({
-      ...current,
-      [field]: validateInventoryField(field, values[field]),
-    }))
+      const next = { ...current }
+      delete next[field]
+      return next
+    })
   }
 
   function requestClose() {
@@ -145,19 +116,15 @@ export function InventoryItemFormModal({
 
     const nextErrors = validateInventoryValues(values)
     const nextFileError = imageFile ? validateInventoryImage(imageFile) : fileError ?? undefined
-    setTouched({ name: true, description: true, quantity: true, price: true })
     setFieldErrors(nextErrors)
     setFileError(nextFileError ?? null)
     setSubmitError(null)
 
-    const firstInvalidField = scalarFields.find((field) => nextErrors[field])
-    if (firstInvalidField) {
-      fieldRefs.current[firstInvalidField]?.focus()
+    if (scalarFields.some((field) => nextErrors[field])) {
       return
     }
 
     if (nextFileError) {
-      dropzoneRef.current?.focus()
       return
     }
 
@@ -208,15 +175,7 @@ export function InventoryItemFormModal({
 
   function renderError(field: InventoryScalarField) {
     const error = fieldErrors[field]
-    return error ? (
-      <p className="inventory-form__error" id={`${fieldIdPrefix}-${field}-error`}>
-        {error}
-      </p>
-    ) : null
-  }
-
-  function errorDescriptionId(field: InventoryScalarField) {
-    return fieldErrors[field] ? `${fieldIdPrefix}-${field}-error` : undefined
+    return error ? <p className="inventory-form__error">{error}</p> : null
   }
 
   return (
@@ -224,60 +183,47 @@ export function InventoryItemFormModal({
       open={open}
       title={title}
       onClose={requestClose}
-      describedBy={descriptionId}
       closeOnBackdrop={!isSubmitting}
       closeOnEscape={!isSubmitting}
       closeDisabled={isSubmitting}
-      busy={isSubmitting}
       className="inventory-form-modal"
-      returnFocusRef={triggerRef}
-      initialFocusRef={nameInputRef}
     >
-      <p className="inventory-form__description" id={descriptionId}>
+      <p className="inventory-form__description">
         {helperCopy}
       </p>
 
-      <form className="inventory-form" onSubmit={handleSubmit} aria-busy={isSubmitting} noValidate>
+      <form className="inventory-form" onSubmit={handleSubmit} noValidate>
         <div className="inventory-form__body">
           <div className="form-field">
             <label htmlFor={`${fieldIdPrefix}-name`}>
-              Name <span aria-hidden="true">*</span>
+              Name <span>*</span>
             </label>
             <input
               id={`${fieldIdPrefix}-name`}
-              ref={(node) => {
-                nameInputRef.current = node
-                fieldRefs.current.name = node
-              }}
               type="text"
+              className={fieldErrors.name ? 'field-invalid' : undefined}
               value={values.name}
               onChange={(event) => setFieldValue('name', event.target.value)}
-              onBlur={() => handleBlur('name')}
               placeholder="Enter item name"
               required
               disabled={isSubmitting}
-              aria-invalid={Boolean(fieldErrors.name)}
-              aria-describedby={errorDescriptionId('name')}
             />
             {renderError('name')}
           </div>
 
           <div className="form-field">
             <label htmlFor={`${fieldIdPrefix}-description`}>
-              Description <span aria-hidden="true">*</span>
+              Description <span>*</span>
             </label>
             <textarea
               id={`${fieldIdPrefix}-description`}
-              ref={(node) => { fieldRefs.current.description = node }}
               value={values.description}
+              className={fieldErrors.description ? 'field-invalid' : undefined}
               onChange={(event) => setFieldValue('description', event.target.value)}
-              onBlur={() => handleBlur('description')}
               placeholder="Enter item description"
               rows={3}
               required
               disabled={isSubmitting}
-              aria-invalid={Boolean(fieldErrors.description)}
-              aria-describedby={errorDescriptionId('description')}
             />
             {renderError('description')}
           </div>
@@ -285,44 +231,45 @@ export function InventoryItemFormModal({
           <div className="inventory-form__number-row">
             <div className="form-field">
               <label htmlFor={`${fieldIdPrefix}-quantity`}>
-                Quantity <span aria-hidden="true">*</span>
+                Quantity <span>*</span>
               </label>
               <input
                 id={`${fieldIdPrefix}-quantity`}
-                ref={(node) => { fieldRefs.current.quantity = node }}
                 type="number"
                 inputMode="numeric"
                 value={values.quantity}
-                onChange={(event) => setFieldValue('quantity', event.target.value)}
-                onBlur={() => handleBlur('quantity')}
+                className={fieldErrors.quantity ? 'field-invalid' : undefined}
+                onChange={(event) => {
+                  if (quantityInputPattern.test(event.target.value)) {
+                    setFieldValue('quantity', event.target.value)
+                  }
+                }}
                 placeholder="0"
                 required
                 disabled={isSubmitting}
-                aria-invalid={Boolean(fieldErrors.quantity)}
-                aria-describedby={errorDescriptionId('quantity')}
               />
               {renderError('quantity')}
             </div>
 
             <div className="form-field">
               <label htmlFor={`${fieldIdPrefix}-price`}>
-                Price <span aria-hidden="true">*</span>
+                Price <span>*</span>
               </label>
               <div className={`price-input${fieldErrors.price ? ' price-input--invalid' : ''}`}>
-                <span className="price-input__prefix" aria-hidden="true">₱</span>
+                <span className="price-input__prefix">₱</span>
                 <input
                   id={`${fieldIdPrefix}-price`}
-                  ref={(node) => { fieldRefs.current.price = node }}
                   type="number"
                   inputMode="decimal"
                   value={values.price}
-                  onChange={(event) => setFieldValue('price', event.target.value)}
-                  onBlur={() => handleBlur('price')}
+                  onChange={(event) => {
+                    if (priceInputPattern.test(event.target.value)) {
+                      setFieldValue('price', event.target.value)
+                    }
+                  }}
                   placeholder="0.00"
                   required
                   disabled={isSubmitting}
-                  aria-invalid={Boolean(fieldErrors.price)}
-                  aria-describedby={errorDescriptionId('price')}
                 />
               </div>
               {renderError('price')}
@@ -337,7 +284,6 @@ export function InventoryItemFormModal({
             error={fileError}
             disabled={isSubmitting}
             itemName={values.name}
-            controlRef={dropzoneRef}
             onSelectionChange={(nextState, nextFile) => {
               setImageState(nextState)
               setImageFile(nextFile)
@@ -349,11 +295,7 @@ export function InventoryItemFormModal({
             }}
           />
 
-          {submitError ? (
-            <p className="inventory-form__submit-error" id={submitErrorId} role="alert" aria-live="assertive">
-              {submitError}
-            </p>
-          ) : null}
+          {submitError ? <p className="inventory-form__submit-error">{submitError}</p> : null}
         </div>
 
         <div className="inventory-form__footer">
@@ -363,7 +305,7 @@ export function InventoryItemFormModal({
           <button className="button button--primary inventory-form__submit" type="submit" disabled={hasKnownErrors || isSubmitting}>
             {isSubmitting ? (
               <>
-                <LoaderCircle className="inventory-form__spinner" aria-hidden="true" />
+                <LoaderCircle />
                 Saving…
               </>
             ) : isCreateMode ? (

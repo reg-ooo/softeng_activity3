@@ -10,8 +10,8 @@ const allowedImageMimeTypes = new Set([
 ])
 
 const allowedImageExtensions = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif'])
-const quantityPattern = /^[1-9]\d*$/
-const pricePattern = /^(?:\d+(?:\.\d+)?|\.\d+)$/
+const quantityPattern = /^(?:0|[1-9]\d*)$/
+const pricePattern = /^(?:[1-9]\d*(?:\.\d+)?|0?\.\d+)$/
 
 export type InventoryScalarField = 'name' | 'description' | 'quantity' | 'price'
 
@@ -29,7 +29,7 @@ export function validateInventoryField(field: InventoryScalarField, value: strin
   }
 
   if (field === 'quantity') {
-    return quantityPattern.test(value) ? undefined : 'Enter a positive whole number.'
+    return quantityPattern.test(value) ? undefined : 'Enter a whole number zero or greater.'
   }
 
   const numericPrice = Number(value)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CircleAlert, LoaderCircle, Plus, RotateCw } from 'lucide-react'
+import { CircleAlert, Plus, RotateCw } from 'lucide-react'
 import { DeleteConfirmationModal } from './components/inventory/DeleteConfirmationModal'
 import { InventoryGrid } from './components/inventory/InventoryGrid'
 import { InventoryItemFormModal } from './components/inventory/InventoryItemFormModal'
@@ -18,9 +18,9 @@ const retrievalErrorMessage = 'We couldn\'t load your inventory. Please try agai
 
 function InventorySkeletons() {
   return (
-    <section className="inventory-grid" aria-label="Loading inventory">
+    <section className="inventory-grid">
       {Array.from({ length: 8 }, (_, index) => (
-        <div className="inventory-card inventory-card--skeleton" aria-hidden="true" key={index}>
+        <div className="inventory-card inventory-card--skeleton" key={index}>
           <div className="skeleton skeleton--image" />
           <div className="inventory-card__content">
             <div>
@@ -50,8 +50,6 @@ function App() {
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const modalTriggerRef = useRef<HTMLElement | null>(null)
-  const addItemTriggerRef = useRef<HTMLButtonElement>(null)
   const listRequestRef = useRef<AbortController | null>(null)
   const deleteRequestRef = useRef(false)
 
@@ -97,33 +95,26 @@ function App() {
     }
   }, [reloadToken])
 
-  const rememberTrigger = useCallback(() => {
-    modalTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-  }, [])
-
   const handleAdd = useCallback(() => {
-    modalTriggerRef.current = addItemTriggerRef.current
     setSelectedItem(null)
     setEditingItem(null)
     setModalMode('add')
   }, [])
 
   const handleEdit = useCallback((item: InventoryItem) => {
-    rememberTrigger()
     setSelectedItem(null)
     setEditingItem(item)
     setModalMode('edit')
-  }, [rememberTrigger])
+  }, [])
 
   const handleDelete = useCallback((item: InventoryItem) => {
-    rememberTrigger()
     setEditingItem(null)
     setSelectedItem(item)
     setDeleteError(null)
     setIsDeleting(false)
     deleteRequestRef.current = false
     setModalMode('delete')
-  }, [rememberTrigger])
+  }, [])
 
   const handleCloseModal = useCallback(() => {
     if (isDeleting) {
@@ -149,10 +140,6 @@ function App() {
       await softDeleteInventory(item.id)
 
       abortActiveListRequest()
-
-      const editButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('button[data-inventory-action="edit"]'))
-      const deletedButtonIndex = editButtons.findIndex((button) => button.dataset.inventoryItemId === String(item.id))
-      modalTriggerRef.current = editButtons[deletedButtonIndex + 1] ?? editButtons[deletedButtonIndex - 1] ?? addItemTriggerRef.current
 
       setListState((current) =>
         current.status === 'success'
@@ -203,39 +190,31 @@ function App() {
   }, [abortActiveListRequest])
 
   return (
-    <main
-      className="page-shell"
-      data-modal-mode={modalMode ?? undefined}
-      data-selected-item-id={editingItem?.id ?? selectedItem?.id}
-    >
+    <main className="page-shell">
       <header className="page-header">
         <div>
           <h1>Inventory</h1>
           <p>Manage your products and stock levels.</p>
         </div>
-        <button ref={addItemTriggerRef} className="button button--primary page-header__action" type="button" onClick={handleAdd}>
-          <Plus aria-hidden="true" />
+        <button className="button button--primary page-header__action" type="button" onClick={handleAdd}>
+          <Plus />
           Add Item
         </button>
       </header>
 
       {listState.status === 'loading' ? (
         <>
-          <div className="loading-status" role="status">
-            <LoaderCircle aria-hidden="true" />
-            <span>Loading inventory…</span>
-          </div>
           <InventorySkeletons />
         </>
       ) : null}
 
       {listState.status === 'error' ? (
-        <section className="state-panel" role="alert" aria-labelledby="error-state-title">
-          <CircleAlert className="state-panel__icon state-panel__icon--error" aria-hidden="true" />
-          <h2 id="error-state-title">Unable to retrieve inventory</h2>
+        <section className="state-panel">
+          <CircleAlert className="state-panel__icon state-panel__icon--error" />
+          <h2>Unable to retrieve inventory</h2>
           <p>{listState.message}</p>
           <button className="button button--secondary" type="button" onClick={() => setReloadToken((token) => token + 1)}>
-            <RotateCw aria-hidden="true" />
+            <RotateCw />
             Retry
           </button>
         </section>
@@ -249,7 +228,6 @@ function App() {
         <InventoryItemFormModal
           mode="create"
           open
-          triggerRef={modalTriggerRef}
           onClose={handleCloseModal}
           onSaved={handleCreated}
         />
@@ -260,7 +238,6 @@ function App() {
           mode="edit"
           item={editingItem}
           open
-          triggerRef={modalTriggerRef}
           onClose={handleCloseModal}
           onSaved={handleUpdated}
         />
@@ -271,7 +248,6 @@ function App() {
           item={selectedItem}
           deleting={isDeleting}
           error={deleteError}
-          triggerRef={modalTriggerRef}
           onCancel={handleCloseModal}
           onConfirm={handleConfirmedDelete}
         />
