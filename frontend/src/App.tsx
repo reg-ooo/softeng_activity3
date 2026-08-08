@@ -16,56 +16,6 @@ type ModalMode = 'add' | 'edit' | 'delete'
 
 const retrievalErrorMessage = 'We couldn\'t load your inventory. Please try again.'
 
-function InventorySkeletons() {
-  return (
-    <section className="inventory-table-panel inventory-table-panel--loading" aria-label="Loading inventory">
-      <div className="inventory-table-scroll">
-        <table className="inventory-table inventory-table--skeleton" aria-label="Loading inventory items">
-          <colgroup>
-            <col className="inventory-table__column-product" />
-            <col className="inventory-table__column-description" />
-            <col className="inventory-table__column-price" />
-            <col className="inventory-table__column-quantity" />
-            <col className="inventory-table__column-actions" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th scope="col">Product</th>
-              <th scope="col">Description</th>
-              <th scope="col">Price</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 7 }, (_, index) => (
-              <tr key={index}>
-                <td>
-                  <div className="inventory-table__product">
-                    <div className="skeleton skeleton--table-image" />
-                    <div className="skeleton skeleton--table-name" />
-                  </div>
-                </td>
-                <td>
-                  <div className="skeleton skeleton--table-description" />
-                </td>
-                <td><div className="skeleton skeleton--table-price" /></td>
-                <td><div className="skeleton skeleton--table-quantity" /></td>
-                <td>
-                  <div className="inventory-table__actions">
-                    <div className="skeleton skeleton--table-button" />
-                    <div className="skeleton skeleton--table-button" />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
-}
-
 function App() {
   const [listState, setListState] = useState<ListState>({ status: 'loading' })
   const [reloadToken, setReloadToken] = useState(0)
@@ -225,12 +175,6 @@ function App() {
           Add Item
         </button>
       </header>
-
-      {listState.status === 'loading' ? (
-        <>
-          <InventorySkeletons />
-        </>
-      ) : null}
 
       {listState.status === 'error' ? (
         <section className="state-panel">

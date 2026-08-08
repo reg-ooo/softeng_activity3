@@ -83,7 +83,7 @@ export function InventoryItemFormModal({
             quantity: String(item.quantity),
             price: String(item.price),
             category: item.category,
-            expectedDeliveryDate: item.expectedDeliveryDate,
+            expectedDeliveryDate: item.expectedDeliveryDate ?? '',
           }
         : emptyValues,
     )

@@ -32,16 +32,20 @@ export function InventoryGrid({ items, onAdd, onEdit, onDelete }: InventoryGridP
           <colgroup>
             <col className="inventory-table__column-product" />
             <col className="inventory-table__column-description" />
+            <col className="inventory-table__column-category" />
             <col className="inventory-table__column-price" />
             <col className="inventory-table__column-quantity" />
+            <col className="inventory-table__column-delivery-date" />
             <col className="inventory-table__column-actions" />
           </colgroup>
           <thead>
             <tr>
               <th scope="col">Product</th>
               <th scope="col">Description</th>
+              <th scope="col">Category</th>
               <th scope="col">Price</th>
               <th scope="col">Quantity</th>
+              <th scope="col">Expected Delivery Date</th>
               <th scope="col">Actions</th>
             </tr>
           </thead>
@@ -63,9 +67,44 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   maximumFractionDigits: 2,
 })
 
+const deliveryDateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+})
+const deliveryDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/
+
 function formatPrice(price: InventoryItem['price']): string {
   const numericPrice = typeof price === 'number' ? price : Number(price)
   return Number.isFinite(numericPrice) ? pesoFormatter.format(numericPrice) : 'Price unavailable'
+}
+
+function formatDeliveryDate(expectedDeliveryDate: InventoryItem['expectedDeliveryDate']): string {
+  if (!expectedDeliveryDate) {
+    return 'Not scheduled'
+  }
+
+  const match = expectedDeliveryDate.match(deliveryDatePattern)
+  if (!match) {
+    return 'Not scheduled'
+  }
+
+  const [, yearString, monthString, dayString] = match
+  const year = Number(yearString)
+  const month = Number(monthString)
+  const day = Number(dayString)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  if (
+    date.getUTCFullYear() !== year
+    || date.getUTCMonth() !== month - 1
+    || date.getUTCDate() !== day
+  ) {
+    return 'Not scheduled'
+  }
+
+  return deliveryDateFormatter.format(date)
 }
 
 interface InventoryTableRowProps {
@@ -107,10 +146,18 @@ function InventoryTableRow({ item, onEdit, onDelete }: InventoryTableRowProps) {
         </span>
       </td>
       <td>
+        <span className="inventory-table__category">{item.category}</span>
+      </td>
+      <td>
         <span className="inventory-table__price">{formatPrice(item.price)}</span>
       </td>
       <td>
         <span className="inventory-table__quantity">{item.quantity} in stock</span>
+      </td>
+      <td>
+        <span className="inventory-table__delivery-date">
+          {formatDeliveryDate(item.expectedDeliveryDate)}
+        </span>
       </td>
       <td>
         <div className="inventory-table__actions">

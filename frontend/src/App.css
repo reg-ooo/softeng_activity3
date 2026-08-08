@@ -119,25 +119,33 @@
 
 .inventory-table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 1320px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
 }
 
 .inventory-table__column-product {
-  width: 25%;
+  width: 18%;
 }
 
 .inventory-table__column-description {
-  width: 29%;
+  width: 18%;
+}
+
+.inventory-table__column-category {
+  width: 11%;
 }
 
 .inventory-table__column-price {
-  width: 13%;
+  width: 10%;
 }
 
 .inventory-table__column-quantity {
+  width: 10%;
+}
+
+.inventory-table__column-delivery-date {
   width: 13%;
 }
 
@@ -213,8 +221,10 @@
 
 .inventory-table__name,
 .inventory-table__description,
+.inventory-table__category,
 .inventory-table__price,
-.inventory-table__quantity {
+.inventory-table__quantity,
+.inventory-table__delivery-date {
   display: block;
 }
 
@@ -233,6 +243,14 @@
   line-height: 1.45;
 }
 
+.inventory-table__category {
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .inventory-table__price {
   color: var(--color-text);
   font-size: 17px;
@@ -245,6 +263,13 @@
   color: var(--color-success);
   font-size: 17px;
   font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.inventory-table__delivery-date {
+  color: var(--color-text);
+  font-size: 16px;
   line-height: 1.4;
   white-space: nowrap;
 }
@@ -271,14 +296,6 @@
 .inventory-table__actions .button--danger {
   width: 100px;
   min-width: 100px;
-}
-
-.inventory-table--skeleton tbody td {
-  height: 102px;
-}
-
-.inventory-table--skeleton .inventory-table__product {
-  gap: 23px;
 }
 
 .state-panel {
@@ -318,42 +335,6 @@
   color: var(--color-muted);
   font-size: 15px;
   line-height: 1.6;
-}
-
-.skeleton {
-  border-radius: 4px;
-  background: #e3e8ef;
-}
-
-.skeleton--table-image {
-  width: 76px;
-  height: 70px;
-  flex: 0 0 76px;
-}
-
-.skeleton--table-name {
-  width: 140px;
-  height: 18px;
-}
-
-.skeleton--table-description {
-  width: min(100%, 280px);
-  height: 36px;
-}
-
-.skeleton--table-price,
-.skeleton--table-quantity {
-  width: 96px;
-  height: 18px;
-}
-
-.skeleton--table-button {
-  width: 90px;
-  height: 38px;
-}
-
-.skeleton--table-button:last-child {
-  width: 100px;
 }
 
 .modal-backdrop {
